@@ -61,7 +61,7 @@ Contraseña inicial: **`biomarketing2026`** (cámbiala en “Contraseña”).
 - **Imágenes por sección**: fondos e imágenes principales (incluida la **foto del instructor**).
 - **Instructor y video**: textos del instructor y **link del video de YouTube** del curso anterior.
 - **Evento y precios**, **Contacto y pagos** (WhatsApp, llave Bre-B, URL de Apps Script), **Galería**, **Testimonios**.
-- **Publicar**: descarga `site-config.js` y reemplázalo en `assets/js/` del hosting para que todos vean los cambios.
+- **Publicar**: descarga `site-config.js` y súbelo a `public/assets/js/` en GitHub (ver “Publicar cambios hechos en el panel”) para que todos vean los cambios.
 
 ## Activar Google Sheets + correo automático
 
