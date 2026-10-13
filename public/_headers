@@ -1,0 +1,28 @@
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  X-Frame-Options: SAMEORIGIN
+  Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000
+
+/assets/js/*
+  Cache-Control: public, max-age=300, must-revalidate
+
+# La configuración publicada cambia al publicar desde el panel: nunca en caché vieja
+/assets/js/site-config.js
+  ! Cache-Control
+  Cache-Control: no-cache, must-revalidate
+
+/assets/css/*
+  Cache-Control: public, max-age=300, must-revalidate
+
+/assets/img/*
+  Cache-Control: public, max-age=604800
+
+# El panel no se indexa en Google ni se guarda en caché
+/admin
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
+/admin.html
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store

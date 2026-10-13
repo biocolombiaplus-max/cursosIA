@@ -990,3 +990,5 @@ svg { width: 1.2em; height: 1.2em; flex: none; }
 .portrait__frame { display: grid; }
 .float-card--b { bottom: -5%; left: 0; top: auto; }
 .tl__time b { white-space: nowrap; }
+.float-card--b { top: 50%; bottom: auto; left: -12%; }
+@media (max-width: 1080px) { .float-card--b { left: 0; } }

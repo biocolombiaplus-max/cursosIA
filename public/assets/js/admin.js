@@ -178,7 +178,7 @@
       const ov = s.overlay ?? 0.75;
       return `
         <article class="card">
-          <header><h3>${sec.name}</h3><a href="index.html#${sec.key === "cta" ? "faq" : sec.key === "hero" ? "inicio" : sec.key === "presencial" || sec.key === "virtual" ? "modalidades" : sec.key}" target="_blank">ver ↗</a></header>
+          <header><h3>${sec.name}</h3><a href="./#${sec.key === "cta" ? "faq" : sec.key === "hero" ? "inicio" : sec.key === "presencial" || sec.key === "virtual" ? "modalidades" : sec.key}" target="_blank">ver ↗</a></header>
           <div class="slots">
             ${sec.bg ? slot(sec, "bg", "Imagen de fondo") : ""}
             ${sec.media ? slot(sec, "media", "Imagen principal", sec.mediaHelp) : ""}

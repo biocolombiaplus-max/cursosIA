@@ -6,9 +6,14 @@ Dicta: **Juan Carlos Cáceres M.** — Bacteriólogo, MSc. en Administración de
 
 ## Estructura
 
+Todo lo que se publica está en `public/` (README e integraciones no quedan expuestos).
+
 ```
-index.html                  Landing pública
-admin.html                  Panel administrativo
+public/index.html                  Landing pública
+public/admin.html                  Panel administrativo (en línea: /admin)
+public/_headers                    Cabeceras de seguridad y caché de Cloudflare
+public/_redirects                  Atajos: /panel → /admin, /inscripcion → precios
+public/404.html, robots.txt
 assets/css/styles.css       Estilos de la landing
 assets/css/admin.css        Estilos del panel
 assets/js/site-config.js    Configuración PUBLICADA (textos, precios, imágenes, video, pago)
@@ -19,7 +24,27 @@ assets/js/admin.js          Lógica del panel: imágenes, textos, asistencia y c
 integraciones/google-apps-script.gs   Backend gratuito: Sheets + Drive + Gmail
 ```
 
-Sitio 100% estático: GitHub Pages, Netlify, Vercel o cualquier hosting.
+Sitio 100% estático alojado en **Cloudflare Pages** (gratis, sin Vercel).
+
+## Publicar en Cloudflare Pages (una sola vez)
+
+1. Entra a https://dash.cloudflare.com → **Workers & Pages** → **Create** → pestaña **Pages** → **Connect to Git**.
+2. Autoriza GitHub y elige el repositorio **biocolombiaplus-max/cursosIA**.
+3. Configuración del build:
+   - **Production branch:** la rama donde está este código (ej. `main`).
+   - **Framework preset:** `None`
+   - **Build command:** *(vacío)*
+   - **Build output directory:** `public`
+4. **Save and Deploy**. En ~1 minuto queda en `https://<nombre>.pages.dev`.
+5. (Opcional) **Custom domains** → agrega tu dominio, ej. `curso.biomarketing.com.co`.
+
+Cada cambio que se suba a la rama de producción se publica solo.
+
+## Publicar cambios hechos en el panel
+
+1. En `/admin` → **Publicar** → **Descargar site-config.js**.
+2. En GitHub abre `public/assets/js/` → **Add file → Upload files** → sube el `site-config.js` descargado → **Commit changes**.
+3. Cloudflare publica la nueva versión en ~1 minuto (este archivo no se guarda en caché).
 
 ## Flujo del inscrito
 
@@ -45,6 +70,6 @@ Sigue las instrucciones al inicio de `integraciones/google-apps-script.gs` (10 m
 ## Probar en local
 
 ```
-python3 -m http.server 8080
-# abrir http://localhost:8080
+npx wrangler pages dev public   # igual que Cloudflare
+# o: python3 -m http.server 8080 --directory public
 ```
