@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="es-CO">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Panel administrativo · BioMarketing</title>
+  <link rel="icon" type="image/png" href="assets/img/favicon.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="assets/css/admin.css" />
+</head>
+<body>
+
+<!-- Login -->
+<section class="login" id="login">
+  <form class="login__card" id="loginForm">
+    <img src="assets/img/monogram.png" alt="" />
+    <h1>Panel administrativo</h1>
+    <p>Landing · IA para el Sector Salud con Claude</p>
+    <input type="password" id="pwd" placeholder="Contraseña" autocomplete="current-password" required />
+    <button class="a-btn a-btn--primary" type="submit">Entrar</button>
+    <small class="login__err" id="loginErr"></small>
+  </form>
+</section>
+
+<!-- App -->
+<div class="app" id="app" hidden>
+  <aside class="side">
+    <div class="side__brand"><img src="assets/img/monogram.png" alt="" /><span>Admin</span></div>
+    <nav class="side__nav">
+      <button class="is-active" data-view="imagenes">Imágenes por sección</button>
+      <button data-view="galeria">Galería</button>
+      <button data-view="evento">Evento y precios</button>
+      <button data-view="contacto">Contacto y pagos</button>
+      <button data-view="instructor">Instructor</button>
+      <button data-view="testimonios">Testimonios</button>
+      <button data-view="publicar">Publicar</button>
+      <button data-view="seguridad">Contraseña</button>
+    </nav>
+    <div class="side__foot">
+      <a class="a-btn a-btn--ghost" href="index.html" target="_blank">Ver landing ↗</a>
+      <button class="a-btn a-btn--ghost" id="logout">Salir</button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="topline">
+      <div>
+        <h2 id="viewTitle">Imágenes por sección</h2>
+        <p class="muted" id="draftState">Los cambios se guardan como borrador en este navegador.</p>
+      </div>
+      <div class="topline__actions">
+        <button class="a-btn a-btn--ghost" id="discard">Descartar borrador</button>
+        <button class="a-btn a-btn--primary" id="save">Guardar cambios</button>
+      </div>
+    </header>
+
+    <!-- Imágenes -->
+    <section class="view is-active" data-view="imagenes">
+      <p class="hint">Sube imágenes de fondo o imágenes principales para cada sección. Se optimizan automáticamente (máx. 1920 px). Tamaño recomendado: fondos 1920×1080, imágenes principales 1200×900 o vertical 1000×1250 para el instructor.</p>
+      <div class="cards" id="sectionCards"></div>
+    </section>
+
+    <!-- Galería -->
+    <section class="view" data-view="galeria">
+      <p class="hint">Fotos de talleres anteriores, del equipo o del lugar. La sección “Experiencia” aparece en la landing solo si hay al menos una foto.</p>
+      <div class="row">
+        <label class="a-btn a-btn--primary file-btn">+ Agregar fotos<input type="file" accept="image/*" multiple id="galUpload" /></label>
+      </div>
+      <div class="gal" id="galList"></div>
+    </section>
+
+    <!-- Evento -->
+    <section class="view" data-view="evento">
+      <div class="form-grid" data-form="evento">
+        <label>Fecha (texto)<input data-k="evento.fechaTexto" /></label>
+        <label>Fecha y hora de inicio (cuenta regresiva)<input type="datetime-local" data-k="evento.fechaISO" data-type="datetime" /></label>
+        <label>Horario<input data-k="evento.horario" /></label>
+        <label>Ciudad<input data-k="evento.ciudad" /></label>
+        <label>Lugar / sede presencial<input data-k="evento.lugar" placeholder="Ej.: Hotel …, salón …" /></label>
+        <label>Plataforma virtual<input data-k="evento.plataformaVirtual" /></label>
+        <label>Cupos presenciales<input type="number" data-k="evento.cuposPresencial" data-type="number" /></label>
+        <span></span>
+        <label>Precio presencial (COP)<input type="number" data-k="precios.presencial" data-type="number" /></label>
+        <label>Precio virtual (COP)<input type="number" data-k="precios.virtual" data-type="number" /></label>
+        <label class="full">Qué incluye presencial (una línea por ítem)<textarea rows="6" data-k="precios.presencialIncluye"></textarea></label>
+        <label class="full">Qué incluye virtual (una línea por ítem)<textarea rows="5" data-k="precios.virtualIncluye"></textarea></label>
+      </div>
+    </section>
+
+    <!-- Contacto -->
+    <section class="view" data-view="contacto">
+      <div class="form-grid">
+        <label>WhatsApp (con indicativo, solo números)<input data-k="contacto.whatsapp" placeholder="573001234567" /></label>
+        <label>Correo<input type="email" data-k="contacto.email" /></label>
+        <label>Instagram (usuario o URL)<input data-k="contacto.instagram" placeholder="@biomarketing" /></label>
+        <label>Link de pago (opcional)<input data-k="pago.linkPago" placeholder="https://… (Wompi, PayU, Mercado Pago)" /></label>
+        <label class="full">Mensaje predeterminado de WhatsApp<textarea rows="2" data-k="contacto.mensajeWhatsapp"></textarea></label>
+        <label class="full">Instrucciones de pago (se muestran al inscribirse)<textarea rows="3" data-k="pago.instrucciones"></textarea></label>
+        <label class="full">URL para guardar inscritos en Google Sheets (Apps Script)<input data-k="registro.endpoint" placeholder="https://script.google.com/macros/s/…/exec" /></label>
+        <label class="check full"><input type="checkbox" data-k="registro.abrirWhatsappAlEnviar" data-type="bool" /> Abrir WhatsApp automáticamente al enviar el formulario</label>
+      </div>
+      <p class="hint">Para recibir los inscritos en una hoja de cálculo sigue la guía del archivo <code>integraciones/google-apps-script.gs</code> (5 minutos). Sin esa URL, cada inscripción llega por WhatsApp.</p>
+    </section>
+
+    <!-- Instructor -->
+    <section class="view" data-view="instructor">
+      <div class="form-grid">
+        <label>Nombre<input data-k="instructor.nombre" /></label>
+        <label>Rol / especialidad<input data-k="instructor.rol" /></label>
+        <label class="full">Biografía<textarea rows="4" data-k="instructor.bio"></textarea></label>
+        <label class="full">Logros / puntos clave (una línea por ítem)<textarea rows="4" data-k="instructor.puntos"></textarea></label>
+      </div>
+      <p class="hint">La foto del instructor se sube en “Imágenes por sección → Instructor”.</p>
+    </section>
+
+    <!-- Testimonios -->
+    <section class="view" data-view="testimonios">
+      <p class="hint">Agrega solo testimonios reales con autorización. La sección aparece en la landing cuando hay al menos uno.</p>
+      <div class="row"><button class="a-btn a-btn--primary" id="addTesti">+ Agregar testimonio</button></div>
+      <div id="testiList" class="testi-list"></div>
+    </section>
+
+    <!-- Publicar -->
+    <section class="view" data-view="publicar">
+      <div class="publish">
+        <div class="pcard">
+          <h3>1 · Vista previa</h3>
+          <p>Con “Guardar cambios” ves los cambios en <b>este navegador</b> al abrir la landing.</p>
+          <a class="a-btn a-btn--ghost" href="index.html" target="_blank">Abrir landing ↗</a>
+        </div>
+        <div class="pcard pcard--hl">
+          <h3>2 · Publicar para todos</h3>
+          <p>Descarga el archivo <code>site-config.js</code> y reemplázalo en <code>assets/js/</code> de tu hosting (GitHub, Netlify, Hostinger…). Así todos los visitantes ven las imágenes y textos nuevos.</p>
+          <button class="a-btn a-btn--primary" id="exportJs">Descargar site-config.js</button>
+          <p class="muted" id="sizeInfo"></p>
+        </div>
+        <div class="pcard">
+          <h3>Copia de seguridad</h3>
+          <p>Exporta o importa toda la configuración en JSON.</p>
+          <div class="row">
+            <button class="a-btn a-btn--ghost" id="exportJson">Exportar JSON</button>
+            <label class="a-btn a-btn--ghost file-btn">Importar JSON<input type="file" accept="application/json" id="importJson" /></label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Seguridad -->
+    <section class="view" data-view="seguridad">
+      <div class="form-grid">
+        <label>Nueva contraseña<input type="password" id="newPwd" autocomplete="new-password" /></label>
+        <label>Repetir contraseña<input type="password" id="newPwd2" autocomplete="new-password" /></label>
+      </div>
+      <div class="row"><button class="a-btn a-btn--primary" id="changePwd">Cambiar contraseña</button></div>
+      <p class="hint">La contraseña se guarda cifrada (SHA-256) dentro de la configuración. Recuerda publicar el <code>site-config.js</code> para que aplique en el sitio en línea. Este acceso protege el panel de visitantes curiosos; para seguridad total protege también la URL <code>/admin.html</code> desde tu hosting.</p>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="assets/js/site-config.js"></script>
+<script src="assets/js/store.js"></script>
+<script src="assets/js/admin.js"></script>
+</body>
+</html>
