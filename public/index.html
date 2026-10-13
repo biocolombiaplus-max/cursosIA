@@ -77,8 +77,9 @@
       <span class="brand__text"><b>BIO</b>Marketing <em>Salud</em></span>
     </a>
     <nav class="nav__links" aria-label="Secciones">
-      <a href="#demo">Demo en vivo</a>
-      <a href="#perfiles">Automatizaciones</a>
+      <a href="#en-accion">Automatizaciones</a>
+      <a href="#demo">Demo</a>
+      <a href="#perfiles">Perfiles</a>
       <a href="#temario">Temario</a>
       <a href="#instructor">Instructor</a>
       <a href="#modalidades">Inversión</a>
@@ -207,6 +208,144 @@
     <span>Médicos generales</span><i>✦</i><span>Especialistas</span><i>✦</i><span>Laboratorio clínico</span><i>✦</i><span>Bacteriología</span><i>✦</i><span>Auditoría médica</span><i>✦</i><span>Odontología</span><i>✦</i><span>Enfermería</span><i>✦</i><span>IPS y clínicas</span><i>✦</i><span>Fisioterapia</span><i>✦</i><span>Nutrición</span><i>✦</i><span>Psicología</span><i>✦</i><span>Gerencia en salud</span><i>✦</i>
   </div>
 </div>
+
+
+<!-- AUTOMATIZACIONES EN ACCIÓN -->
+<section class="sec sec--dark live" id="en-accion" aria-label="Automatizaciones en acción">
+  <div class="glow-orb glow-orb--violet" aria-hidden="true"></div>
+  <div class="wrap">
+    <div class="sec__head sec__head--center">
+      <span class="kicker kicker--dark reveal">Automatizaciones reales · te las llevas instaladas</span>
+      <h2 class="h2 reveal">Así trabajan solas <span class="serif-it">mientras tú atiendes.</span></h2>
+      <p class="lead lead--dark reveal">Tres automatizaciones que construimos en el taller, funcionando en tiempo real. Elige una o déjalas correr.</p>
+    </div>
+
+    <div class="lv-tabs reveal" role="tablist">
+      <button class="lv-tab is-active" role="tab" data-scene="lab"><span class="lv-tab__ic"><svg><use href="#i-flask"/></svg></span><span><b>Resultados por WhatsApp</b><small>Laboratorio clínico</small></span><i class="lv-tab__bar"><i></i></i></button>
+      <button class="lv-tab" role="tab" data-scene="agenda"><span class="lv-tab__ic"><svg><use href="#i-gcal"/></svg></span><span><b>Agenda y recordatorios</b><small>Medicina · Odontología · Psicología</small></span><i class="lv-tab__bar"><i></i></i></button>
+      <button class="lv-tab" role="tab" data-scene="report"><span class="lv-tab__ic"><svg><use href="#i-sheet"/></svg></span><span><b>Informe mensual con IA</b><small>Gerencia y productividad</small></span><i class="lv-tab__bar"><i></i></i></button>
+    </div>
+
+    <div class="lv-stage reveal" id="lvStage">
+
+      <!-- ===== Escena 1: Laboratorio ===== -->
+      <div class="lv-scene is-active" data-scene="lab">
+        <div class="win lis">
+          <div class="win__bar"><span class="dots"><i></i><i></i><i></i></span><span class="win__title">LIS · Resultados del día</span><span class="win__live"><i></i>Sincronizado</span></div>
+          <div class="lis__filters"><span class="pill is-on">Hoy</span><span class="pill">Validados</span><span class="pill">Pendientes</span><span class="lis__search">Buscar paciente…</span></div>
+          <table class="lis__table">
+            <thead><tr><th>Paciente</th><th>Examen</th><th>Estado</th><th>Hora</th></tr></thead>
+            <tbody data-lis-rows>
+              <tr data-r="0"><td><span class="av">AR</span>Andrés R.</td><td>Hemograma</td><td><span class="st st--sent">Enviado ✓✓</span></td><td>07:31</td></tr>
+              <tr data-r="1"><td><span class="av av--b">MG</span>María G.</td><td>Perfil lipídico</td><td><span class="st st--proc">En proceso</span></td><td data-t>—</td></tr>
+              <tr data-r="2"><td><span class="av av--c">LP</span>Luis P.</td><td>Glicemia basal</td><td><span class="st st--proc">En proceso</span></td><td data-t>—</td></tr>
+              <tr data-r="3"><td><span class="av av--d">CS</span>Carmen S.</td><td>TSH · T4 libre</td><td><span class="st st--proc">En proceso</span></td><td data-t>—</td></tr>
+              <tr data-r="4"><td><span class="av av--e">JM</span>Jorge M.</td><td>Uroanálisis</td><td><span class="st st--proc">En proceso</span></td><td data-t>—</td></tr>
+            </tbody>
+          </table>
+          <div class="lis__foot">
+            <div><small>Enviados hoy</small><b data-lis-count>46</b></div>
+            <div><small>Tiempo por envío</small><b>8 seg</b></div>
+            <div><small>Llamadas evitadas</small><b data-lis-calls>31</b></div>
+          </div>
+        </div>
+        <div class="lv-bridge" aria-hidden="true"><span class="lv-bridge__line"></span><span class="lv-bridge__pkt" data-pkt><svg><use href="#i-doc"/></svg></span><span class="lv-bridge__tag"><img src="assets/img/claude-mark.svg" alt="" />Claude</span></div>
+        <div class="phone" aria-hidden="true">
+          <div class="phone__island"></div>
+          <div class="phone__status"><span>9:41</span><span class="phone__sig">▮▮▮ 5G ▭</span></div>
+          <div class="wa__head"><span class="wa__back">‹</span><span class="wa__avatar wa__avatar--lab"><svg><use href="#i-flask"/></svg></span><span class="wa__who"><b>Laboratorio Clínico Vida <i class="wa__verified">✓</i></b><small data-wa-state>Cuenta de empresa</small></span></div>
+          <div class="wa__chat" data-chat="lab">
+            <div class="wa__day">HOY</div>
+          </div>
+          <div class="wa__input"><span>Mensaje</span><i></i></div>
+        </div>
+      </div>
+
+      <!-- ===== Escena 2: Agenda ===== -->
+      <div class="lv-scene" data-scene="agenda">
+        <div class="win cal">
+          <div class="win__bar"><span class="dots"><i></i><i></i><i></i></span><span class="win__title" data-cal-title>Agenda · Dra. Pérez · Medicina interna</span><span class="win__live"><i></i>Google Calendar</span></div>
+          <div class="cal__prof">
+            <button class="pill is-on" data-prof="0">Medicina</button><button class="pill" data-prof="1">Odontología</button><button class="pill" data-prof="2">Psicología</button>
+            <span class="cal__legend"><i class="lg lg--pend"></i>Pendiente <i class="lg lg--rem"></i>Recordada <i class="lg lg--ok"></i>Confirmada <i class="lg lg--re"></i>Reasignada</span>
+          </div>
+          <div class="cal__grid" data-cal-grid>
+            <div class="cal__corner"></div>
+            <div class="cal__day">Lun <b>9</b></div><div class="cal__day is-today">Mar <b>10</b></div><div class="cal__day">Mié <b>11</b></div><div class="cal__day">Jue <b>12</b></div><div class="cal__day">Vie <b>13</b></div>
+            <div class="cal__hour">8:00</div><div class="cal__hour">9:00</div><div class="cal__hour">10:00</div><div class="cal__hour">11:00</div><div class="cal__hour">2:00</div><div class="cal__hour">3:00</div>
+          </div>
+          <div class="cal__toast" data-cal-toast><svg><use href="#i-users"/></svg><span><b>Cupo liberado → lista de espera</b><small data-cal-toast-txt>Asignado a Laura M. y notificada por WhatsApp</small></span></div>
+          <div class="lis__foot">
+            <div><small>Recordatorios enviados</small><b data-cal-sent>58</b></div>
+            <div><small>Confirmadas</small><b data-cal-ok>41</b></div>
+            <div><small>Cupos recuperados</small><b data-cal-re>6</b></div>
+          </div>
+        </div>
+        <div class="lv-bridge" aria-hidden="true"><span class="lv-bridge__line"></span><span class="lv-bridge__pkt" data-pkt><svg><use href="#i-clock"/></svg></span><span class="lv-bridge__tag"><svg><use href="#i-bolt"/></svg>24 h antes</span></div>
+        <div class="phone" aria-hidden="true">
+          <div class="phone__island"></div>
+          <div class="phone__status"><span>6:00</span><span class="phone__sig">▮▮▮ 5G ▭</span></div>
+          <div class="wa__head"><span class="wa__back">‹</span><span class="wa__avatar wa__avatar--cal"><svg><use href="#i-steth"/></svg></span><span class="wa__who"><b data-wa-name2>Consultorio Dra. Pérez <i class="wa__verified">✓</i></b><small>Cuenta de empresa</small></span></div>
+          <div class="wa__chat" data-chat="agenda">
+            <div class="wa__day">HOY</div>
+          </div>
+          <div class="wa__input"><span>Mensaje</span><i></i></div>
+        </div>
+      </div>
+
+      <!-- ===== Escena 3: Informe ===== -->
+      <div class="lv-scene" data-scene="report">
+        <div class="win rep">
+          <div class="win__bar"><span class="dots"><i></i><i></i><i></i></span><span class="win__title">Informe mensual · Octubre 2026 · Laboratorio Clínico Vida</span><span class="win__live"><i></i>Generado automáticamente</span></div>
+          <div class="rep__kpis">
+            <div class="kpi"><small>Pacientes atendidos</small><b data-kpi-to="1248">0</b><em class="up">▲ 12% vs sep.</em></div>
+            <div class="kpi"><small>Exámenes procesados</small><b data-kpi-to="3912">0</b><em class="up">▲ 9%</em></div>
+            <div class="kpi"><small>Tiempo de entrega</small><b><span data-kpi-to="3.2" data-dec="1">0</span> h</b><em class="up">▼ 41 min</em></div>
+            <div class="kpi"><small>Satisfacción</small><b><span data-kpi-to="4.8" data-dec="1">0</span>/5</b><em class="up">▲ 0,3</em></div>
+          </div>
+          <div class="rep__charts">
+            <figure class="chart">
+              <figcaption>Pacientes por semana</figcaption>
+              <svg viewBox="0 0 300 150" class="bars" data-bars role="img" aria-label="Pacientes por semana: S1 268, S2 241, S3 290, S4 312, S5 137">
+                <g class="grid"><line x1="28" x2="296" y1="20" y2="20"/><line x1="28" x2="296" y1="62" y2="62"/><line x1="28" x2="296" y1="104" y2="104"/><line x1="28" x2="296" y1="128" y2="128" class="base"/></g>
+                <g class="ylab"><text x="22" y="23">300</text><text x="22" y="65">150</text><text x="22" y="131">0</text></g>
+              </svg>
+            </figure>
+            <figure class="chart">
+              <figcaption>Tiempo de entrega promedio (horas)</figcaption>
+              <svg viewBox="0 0 300 150" class="line" data-line role="img" aria-label="Tiempo de entrega por semana: 3,9 · 3,7 · 3,4 · 3,1 · 3,0 horas">
+                <g class="grid"><line x1="28" x2="296" y1="20" y2="20"/><line x1="28" x2="296" y1="74" y2="74"/><line x1="28" x2="296" y1="128" y2="128" class="base"/></g>
+                <g class="ylab"><text x="22" y="23">4 h</text><text x="22" y="77">3 h</text><text x="22" y="131">2 h</text></g>
+              </svg>
+            </figure>
+          </div>
+          <div class="rep__ai">
+            <div class="rep__ai-head"><img src="assets/img/claude-mark.svg" alt="" /><b>Resumen ejecutivo · Claude</b><em data-rep-status>Analizando datos…</em></div>
+            <p data-rep-typed></p>
+          </div>
+        </div>
+        <div class="lv-bridge" aria-hidden="true"><span class="lv-bridge__line"></span><span class="lv-bridge__pkt" data-pkt><svg><use href="#i-doc"/></svg></span><span class="lv-bridge__tag"><svg><use href="#i-mail"/></svg>Día 1</span></div>
+        <div class="mail" aria-hidden="true">
+          <div class="mail__bar"><span class="dots"><i></i><i></i><i></i></span><b>Bandeja de entrada</b></div>
+          <div class="mail__list" data-mail-list>
+            <div class="mail__item mail__item--old"><span class="av av--d">CO</span><div><b>Comité de calidad</b><small>Acta reunión septiembre</small></div><em>ayer</em></div>
+            <div class="mail__item mail__item--old"><span class="av av--e">PR</span><div><b>Proveedor reactivos</b><small>Cotización noviembre</small></div><em>lun</em></div>
+          </div>
+          <div class="mail__open" data-mail-open>
+            <small>Para: gerencia@laboratoriovida.co</small>
+            <b>📊 Informe mensual octubre 2026 — listo</b>
+            <p>Adjunto el informe de productividad con indicadores, gráficas y recomendaciones generadas por IA.</p>
+            <div class="mail__att"><svg><use href="#i-doc"/></svg><span><b>Informe_Octubre_2026.pdf</b><small>6 páginas · 412 KB</small></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="lv-note reveal"><svg><use href="#i-shield"/></svg>Simulación con datos ficticios. En el taller instalas estas mismas automatizaciones con tus datos, cumpliendo la Ley 1581 de 2012.</p>
+    <div class="sec__cta reveal">
+      <button class="btn btn--glow btn--lg magnetic" data-open-form>Quiero estas automatizaciones <svg><use href="#i-arrow"/></svg></button>
+    </div>
+  </div>
+</section>
 
 <!-- PROBLEMA -->
 <section class="sec sec--light" id="problema" data-section="problema">
@@ -674,7 +813,7 @@
     </div>
     <div class="footer__col">
       <h4>El taller</h4>
-      <a href="#perfiles">Automatizaciones</a>
+      <a href="#perfiles">Perfiles</a>
       <a href="#temario">Temario</a>
       <a href="#modalidades">Inversión</a>
       <a href="#faq">Preguntas</a>
@@ -814,5 +953,6 @@
 <script src="assets/js/site-config.js"></script>
 <script src="assets/js/store.js"></script>
 <script src="assets/js/main.js"></script>
+<script src="assets/js/live.js"></script>
 </body>
 </html>

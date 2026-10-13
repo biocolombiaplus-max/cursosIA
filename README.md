@@ -26,19 +26,17 @@ integraciones/google-apps-script.gs   Backend gratuito: Sheets + Drive + Gmail
 
 Sitio 100% estático alojado en **Cloudflare Pages** (gratis, sin Vercel).
 
-## Publicar en Cloudflare Pages (una sola vez)
+## Publicar en Cloudflare (una sola vez)
 
-1. Entra a https://dash.cloudflare.com → **Workers & Pages** → **Create** → pestaña **Pages** → **Connect to Git**.
-2. Autoriza GitHub y elige el repositorio **biocolombiaplus-max/cursosIA**.
-3. Configuración del build:
-   - **Production branch:** la rama donde está este código (ej. `main`).
-   - **Framework preset:** `None`
-   - **Build command:** *(vacío)*
-   - **Build output directory:** `public`
-4. **Save and Deploy**. En ~1 minuto queda en `https://<nombre>.pages.dev`.
-5. (Opcional) **Custom domains** → agrega tu dominio, ej. `curso.biomarketing.com.co`.
+**Opción A — botón "Create app" (panel nuevo, recomendada):**
+1. https://dash.cloudflare.com → **Create app** (o *Compute → Workers & Pages → Create*).
+2. **Import a repository / Connect GitHub** → elige **biocolombiaplus-max/cursosIA** y la rama donde está este código.
+3. Deja **Build command** vacío y **Deploy command** `npx wrangler deploy` (lee `wrangler.jsonc`, que publica la carpeta `public/`).
+4. **Deploy**. Queda en `https://cursosia.<tu-subdominio>.workers.dev`. Dominio propio en *Settings → Domains & Routes*.
 
-Cada cambio que se suba a la rama de producción se publica solo.
+**Opción B — Cloudflare Pages:** *Workers & Pages → Create → pestaña Pages → Connect to Git* · Framework `None` · Build command vacío · **Build output directory `public`**.
+
+En ambos casos cada cambio en GitHub se publica solo, y `_headers`, `_redirects` y `404.html` funcionan igual.
 
 ## Publicar cambios hechos en el panel
 
@@ -62,6 +60,10 @@ Contraseña inicial: **`biomarketing2026`** (cámbiala en “Contraseña”).
 - **Instructor y video**: textos del instructor y **link del video de YouTube** del curso anterior.
 - **Evento y precios**, **Contacto y pagos** (WhatsApp, llave Bre-B, URL de Apps Script), **Galería**, **Testimonios**.
 - **Publicar**: descarga `site-config.js` y súbelo a `public/assets/js/` en GitHub (ver “Publicar cambios hechos en el panel”) para que todos vean los cambios.
+
+## Kit de automatizaciones reales (`kit-automatizaciones/`)
+
+Resultados de laboratorio por WhatsApp, agenda con recordatorios/confirmaciones/lista de espera e informe mensual con IA (Claude). Instalación en `kit-automatizaciones/LEEME.md`.
 
 ## Activar Google Sheets + correo automático
 
