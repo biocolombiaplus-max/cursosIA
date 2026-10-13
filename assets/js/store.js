@@ -98,6 +98,8 @@
     setLeads(list) {
       return idbSet("leads", list);
     },
+    kvGet: idbGet,
+    kvSet: idbSet,
     deepMerge
   };
 })();

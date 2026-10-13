@@ -6,9 +6,12 @@
  */
 window.SITE_CONFIG = {
   evento: {
-    fechaISO: "2026-11-07T08:00:00-05:00",
+    titulo: "IA para el Sector Salud: automatizaciones con Claude",
+    fechaISO: "2026-11-07T14:00:00-05:00",
+    fechaFinISO: "2026-11-07T18:00:00-05:00",
     fechaTexto: "Sábado 7 de noviembre de 2026",
-    horario: "8:00 a.m. – 5:00 p.m.",
+    horario: "2:00 p.m. – 6:00 p.m. (hora Colombia)",
+    intensidad: "4 horas",
     ciudad: "Cúcuta, Norte de Santander",
     lugar: "Lugar del evento por confirmar",
     plataformaVirtual: "En vivo por Zoom",
@@ -18,32 +21,50 @@ window.SITE_CONFIG = {
     presencial: 180000,
     virtual: 120000,
     presencialIncluye:
-      "Taller presencial en Cúcuta, 8 horas\nAcompañamiento del equipo en sala para tus automatizaciones\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia\nNetworking con profesionales de la salud de la región\nGrupo privado de soporte post-curso",
+      "Taller presencial en Cúcuta, 4 horas intensivas\nAcompañamiento en sala para construir tus automatizaciones\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia firmado\nNetworking con profesionales de la salud de la región\nGrupo privado de soporte post-curso",
     virtualIncluye:
-      "Transmisión en vivo el mismo día\nPreguntas en tiempo real por chat\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia digital\nGrupo privado de soporte post-curso"
+      "Transmisión en vivo el mismo día y horario\nPreguntas en tiempo real por chat\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia digital firmado\nGrupo privado de soporte post-curso"
   },
   contacto: {
-    whatsapp: "573000000000",
+    whatsapp: "573505457420",
     email: "biomarketing.salud@gmail.com",
     instagram: "",
     mensajeWhatsapp: "Hola BioMarketing, quiero información del curso de IA para el sector salud con Claude."
   },
   pago: {
-    instrucciones:
-      "Te enviaremos por WhatsApp los datos de pago (transferencia, Nequi o Bancolombia). Tu cupo queda confirmado al recibir el comprobante.",
+    tipo: "Llave Bre-B",
+    llave: "@OTO262",
+    titular: "Juan Carlos Cáceres",
+    horasReserva: 24,
+    instrucciones: "Transfiere desde la app de cualquier banco o billetera (Bancolombia, Nequi, Daviplata, Davivienda, BBVA…) usando la llave Bre-B. El dinero llega al instante.",
     linkPago: ""
   },
   registro: {
-    // URL de Google Apps Script (ver integraciones/google-apps-script.gs). Vacío = solo WhatsApp + copia local.
+    // URL de Google Apps Script (ver integraciones/google-apps-script.gs). Vacío = solo WhatsApp.
     endpoint: "",
-    abrirWhatsappAlEnviar: true
+    abrirWhatsappAlEnviar: false
   },
   instructor: {
-    nombre: "Equipo BioMarketing",
-    rol: "Marketing médico · Auditoría en salud · Automatización con IA",
+    nombre: "Juan Carlos Cáceres M.",
+    rol: "Bacteriólogo · MSc. en Administración de Instituciones de Salud",
+    credenciales:
+      "Bacteriólogo\nMagíster en Administración de Instituciones de Salud\nEspecialista en Analítica de Datos e Inteligencia Artificial para el sector salud",
     bio:
-      "Trabajamos todos los días con médicos, laboratorios clínicos, IPS y auditores. Este taller nace de lo que ya implementamos en consultorios y laboratorios reales: menos tiempo en tareas repetitivas y más tiempo con el paciente.",
-    puntos: "Implementación de IA en consultorios, IPS y laboratorios\nProcesos de auditoría médica y respuesta a glosas\nMarketing médico ético y captación de pacientes"
+      "Ha trabajado en laboratorio clínico, gestión de instituciones de salud y auditoría. Hoy acompaña a médicos, laboratorios e IPS a implementar inteligencia artificial de forma práctica, ética y medible. En este taller enseña lo que ya funciona en instituciones reales.",
+    puntos:
+      "Implementación de IA en consultorios, IPS y laboratorios clínicos\nAnalítica de datos para la toma de decisiones en salud\nAuditoría médica, calidad y respuesta a glosas\nMarketing médico ético y captación de pacientes"
+  },
+  video: {
+    url: "",
+    titulo: "Así se vivió nuestro curso anterior",
+    descripcion: "Mira a profesionales de la salud construyendo sus primeras automatizaciones en vivo."
+  },
+  certificado: {
+    firmante: "JUAN CARLOS CÁCERES M.",
+    cargo:
+      "Bacteriólogo · MSc. en Administración de Instituciones de Salud\nEsp. en Analítica de Datos e Inteligencia Artificial para el Sector Salud",
+    firmaImg: "",
+    codigoPrefijo: "BM-IA-2026"
   },
   testimonios: [],
   galeria: [],

@@ -8,7 +8,7 @@
   <link rel="icon" type="image/png" href="assets/img/favicon.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="assets/css/admin.css" />
 </head>
 <body>
@@ -30,11 +30,12 @@
   <aside class="side">
     <div class="side__brand"><img src="assets/img/monogram.png" alt="" /><span>Admin</span></div>
     <nav class="side__nav">
-      <button class="is-active" data-view="imagenes">Imágenes por sección</button>
+      <button class="is-active" data-view="asistencia">Asistencia y certificados</button>
+      <button data-view="imagenes">Imágenes por sección</button>
       <button data-view="galeria">Galería</button>
       <button data-view="evento">Evento y precios</button>
       <button data-view="contacto">Contacto y pagos</button>
-      <button data-view="instructor">Instructor</button>
+      <button data-view="instructor">Instructor y video</button>
       <button data-view="testimonios">Testimonios</button>
       <button data-view="publicar">Publicar</button>
       <button data-view="seguridad">Contraseña</button>
@@ -48,7 +49,7 @@
   <main class="main">
     <header class="topline">
       <div>
-        <h2 id="viewTitle">Imágenes por sección</h2>
+        <h2 id="viewTitle">Asistencia y certificados</h2>
         <p class="muted" id="draftState">Los cambios se guardan como borrador en este navegador.</p>
       </div>
       <div class="topline__actions">
@@ -57,8 +58,68 @@
       </div>
     </header>
 
+    <!-- Asistencia y certificados -->
+    <section class="view is-active" data-view="asistencia">
+      <div class="kpis">
+        <div><small>Inscritos</small><b data-kpi="total">0</b></div>
+        <div><small>Pagos confirmados</small><b data-kpi="pago">0</b></div>
+        <div><small>Asistieron</small><b data-kpi="asistio">0</b></div>
+        <div><small>Certificados enviados</small><b data-kpi="cert">0</b></div>
+      </div>
+
+      <div class="toolbar">
+        <input type="search" id="search" placeholder="Buscar por nombre, documento o correo…" />
+        <select id="filter">
+          <option value="todos">Todos</option>
+          <option value="asistio">Asistieron</option>
+          <option value="noasistio">No han marcado asistencia</option>
+          <option value="sincert">Asistieron sin certificado</option>
+          <option value="Presencial">Presencial</option>
+          <option value="Virtual">Virtual</option>
+        </select>
+        <button class="a-btn a-btn--ghost" id="syncSheets">↻ Cargar desde Google Sheets</button>
+        <label class="a-btn a-btn--ghost file-btn">Importar CSV<input type="file" accept=".csv,text/csv" id="importCsv" /></label>
+        <button class="a-btn a-btn--ghost" id="addPerson">+ Agregar asistente</button>
+        <button class="a-btn a-btn--ghost" id="exportCsv">Exportar CSV</button>
+      </div>
+
+      <div class="bulk">
+        <div><b>Enviar certificados</b><small>A todos los que tienen asistencia marcada y aún no lo han recibido.</small></div>
+        <button class="a-btn a-btn--primary" id="sendAll">Enviar certificados por correo</button>
+        <button class="a-btn a-btn--ghost" id="zipAll">Descargar todos (PDF)</button>
+      </div>
+
+      <div class="people" id="people"></div>
+
+      <details class="cfg-box">
+        <summary>Configuración del certificado y conexión</summary>
+        <div class="form-grid">
+          <label>Nombre de quien firma<input data-k="certificado.firmante" /></label>
+          <label>Prefijo del código<input data-k="certificado.codigoPrefijo" /></label>
+          <label class="full">Títulos del firmante (una línea por renglón)<textarea rows="2" data-k="certificado.cargo"></textarea></label>
+          <label>Título del curso<input data-k="evento.titulo" /></label>
+          <label>Intensidad horaria<input data-k="evento.intensidad" /></label>
+          <div class="full sigrow">
+            <div class="sigprev" id="sigPrev"></div>
+            <div>
+              <b>Firma escaneada (opcional)</b>
+              <p class="muted">PNG con fondo transparente o foto de la firma en papel blanco. Si no subes una, se usa el nombre en letra cursiva.</p>
+              <div class="row">
+                <label class="a-btn a-btn--sm a-btn--primary file-btn">Subir firma<input type="file" accept="image/*" id="sigUpload" /></label>
+                <button class="a-btn a-btn--sm a-btn--danger" id="sigRemove">Quitar</button>
+              </div>
+            </div>
+          </div>
+          <label class="full">Clave de administración de Google Apps Script (solo se guarda en este navegador)
+            <input type="password" id="adminKey" placeholder="La misma CLAVE_ADMIN del archivo google-apps-script.gs" autocomplete="off" />
+          </label>
+        </div>
+        <div class="row"><button class="a-btn a-btn--ghost" id="previewCert">Ver certificado de ejemplo</button></div>
+      </details>
+    </section>
+
     <!-- Imágenes -->
-    <section class="view is-active" data-view="imagenes">
+    <section class="view" data-view="imagenes">
       <p class="hint">Sube imágenes de fondo o imágenes principales para cada sección. Se optimizan automáticamente (máx. 1920 px). Tamaño recomendado: fondos 1920×1080, imágenes principales 1200×900 o vertical 1000×1250 para el instructor.</p>
       <div class="cards" id="sectionCards"></div>
     </section>
@@ -76,7 +137,8 @@
     <section class="view" data-view="evento">
       <div class="form-grid" data-form="evento">
         <label>Fecha (texto)<input data-k="evento.fechaTexto" /></label>
-        <label>Fecha y hora de inicio (cuenta regresiva)<input type="datetime-local" data-k="evento.fechaISO" data-type="datetime" /></label>
+        <label>Hora de inicio (hora Colombia)<input type="datetime-local" data-k="evento.fechaISO" data-type="datetime" /></label>
+        <label>Hora de finalización (hora Colombia)<input type="datetime-local" data-k="evento.fechaFinISO" data-type="datetime" /></label>
         <label>Horario<input data-k="evento.horario" /></label>
         <label>Ciudad<input data-k="evento.ciudad" /></label>
         <label>Lugar / sede presencial<input data-k="evento.lugar" placeholder="Ej.: Hotel …, salón …" /></label>
@@ -96,11 +158,13 @@
         <label>WhatsApp (con indicativo, solo números)<input data-k="contacto.whatsapp" placeholder="573001234567" /></label>
         <label>Correo<input type="email" data-k="contacto.email" /></label>
         <label>Instagram (usuario o URL)<input data-k="contacto.instagram" placeholder="@biomarketing" /></label>
-        <label>Link de pago (opcional)<input data-k="pago.linkPago" placeholder="https://… (Wompi, PayU, Mercado Pago)" /></label>
+        <label>Llave Bre-B<input data-k="pago.llave" placeholder="@OTO262" /></label>
+        <label>Titular de la llave<input data-k="pago.titular" /></label>
+        <label>Horas de reserva del cupo<input type="number" data-k="pago.horasReserva" data-type="number" /></label>
         <label class="full">Mensaje predeterminado de WhatsApp<textarea rows="2" data-k="contacto.mensajeWhatsapp"></textarea></label>
-        <label class="full">Instrucciones de pago (se muestran al inscribirse)<textarea rows="3" data-k="pago.instrucciones"></textarea></label>
+        
         <label class="full">URL para guardar inscritos en Google Sheets (Apps Script)<input data-k="registro.endpoint" placeholder="https://script.google.com/macros/s/…/exec" /></label>
-        <label class="check full"><input type="checkbox" data-k="registro.abrirWhatsappAlEnviar" data-type="bool" /> Abrir WhatsApp automáticamente al enviar el formulario</label>
+        <label class="check full"><input type="checkbox" data-k="registro.abrirWhatsappAlEnviar" data-type="bool" /> Además, abrir WhatsApp al completar el paso 1 del formulario</label>
       </div>
       <p class="hint">Para recibir los inscritos en una hoja de cálculo sigue la guía del archivo <code>integraciones/google-apps-script.gs</code> (5 minutos). Sin esa URL, cada inscripción llega por WhatsApp.</p>
     </section>
@@ -109,11 +173,19 @@
     <section class="view" data-view="instructor">
       <div class="form-grid">
         <label>Nombre<input data-k="instructor.nombre" /></label>
-        <label>Rol / especialidad<input data-k="instructor.rol" /></label>
+        <label>Rol (línea bajo el nombre)<input data-k="instructor.rol" /></label>
+        <label class="full">Títulos y credenciales (una por línea)<textarea rows="3" data-k="instructor.credenciales"></textarea></label>
         <label class="full">Biografía<textarea rows="4" data-k="instructor.bio"></textarea></label>
         <label class="full">Logros / puntos clave (una línea por ítem)<textarea rows="4" data-k="instructor.puntos"></textarea></label>
       </div>
-      <p class="hint">La foto del instructor se sube en “Imágenes por sección → Instructor”.</p>
+      <p class="hint">La <b>foto del instructor</b> se sube en “Imágenes por sección → Instructor” (vertical 4:5, ej. 1000×1250).</p>
+      <h3 class="subh">Video de YouTube del curso anterior</h3>
+      <div class="form-grid">
+        <label class="full">Link de YouTube<input data-k="video.url" placeholder="https://www.youtube.com/watch?v=… o https://youtu.be/…" /></label>
+        <label>Título de la sección<input data-k="video.titulo" /></label>
+        <label>Descripción<input data-k="video.descripcion" /></label>
+      </div>
+      <div class="ytprev" id="ytPrev"></div>
     </section>
 
     <!-- Testimonios -->
@@ -162,8 +234,16 @@
 
 <div class="toast" id="toast"></div>
 
+<div class="pv" id="pv" hidden>
+  <div class="pv__box">
+    <div class="pv__bar"><b id="pvTitle">Certificado</b><span class="spacer"></span><button class="a-btn a-btn--sm a-btn--ghost" id="pvClose">Cerrar</button></div>
+    <div class="pv__img" id="pvImg"></div>
+  </div>
+</div>
+
 <script src="assets/js/site-config.js"></script>
 <script src="assets/js/store.js"></script>
+<script src="assets/js/diploma.js"></script>
 <script src="assets/js/admin.js"></script>
 </body>
 </html>

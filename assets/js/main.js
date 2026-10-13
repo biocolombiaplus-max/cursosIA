@@ -6,7 +6,11 @@
   const money = (n) => "$" + Number(n || 0).toLocaleString("es-CO");
   const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const lines = (s) => String(s || "").split("\n").map((l) => l.trim()).filter(Boolean);
-  const waLink = (msg) => `https://wa.me/${String(cfg.contacto?.whatsapp || "").replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`;
+  const waNumber = String(cfg.contacto?.whatsapp || "").replace(/\D/g, "");
+  const waLink = (msg) => `https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`;
+  const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+  const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const pago = cfg.pago || {};
 
   /* ---------- Textos y precios ---------- */
   $$("[data-bind]").forEach((el) => {
@@ -17,10 +21,17 @@
   $$("[data-price]").forEach((el) => (el.textContent = money(get("precios." + el.dataset.price))));
   $$("[data-price-num]").forEach((el) => (el.textContent = Number(get("precios." + el.dataset.priceNum) || 0).toLocaleString("es-CO")));
   $$("[data-list]").forEach((el) => {
-    el.innerHTML = lines(get(el.dataset.list))
-      .map((l) => `<li><svg><use href="#i-check"/></svg><span>${esc(l)}</span></li>`)
-      .join("");
+    el.innerHTML = lines(get(el.dataset.list)).map((l) => `<li><svg><use href="#i-check"/></svg><span>${esc(l)}</span></li>`).join("");
   });
+  const credIcons = ["i-flask", "i-build", "i-cpu", "i-cert"];
+  $$("[data-creds]").forEach((el) => {
+    el.innerHTML = lines(cfg.instructor?.credenciales).map((l, i) => `<li><svg><use href="#${credIcons[i % credIcons.length]}"/></svg><b>${esc(l)}</b></li>`).join("");
+  });
+  const sig = $("[data-cert-sig]");
+  if (sig && cfg.certificado?.firmaImg) {
+    sig.style.backgroundImage = `url("${cfg.certificado.firmaImg}")`;
+    sig.classList.add("has-img");
+  }
 
   /* ---------- Contacto ---------- */
   $$("[data-wa]").forEach((a) => {
@@ -79,7 +90,28 @@
       .join("");
   }
 
-  /* ---------- Navegación ---------- */
+  /* ---------- Video de YouTube ---------- */
+  function ytId(url) {
+    const m = String(url || "").match(/(?:youtu\.be\/|v=|\/embed\/|\/shorts\/|\/live\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : /^[A-Za-z0-9_-]{11}$/.test(url || "") ? url : "";
+  }
+  const vid = ytId(cfg.video?.url);
+  if (vid) {
+    $("#video").classList.remove("is-hidden");
+    const th = $("[data-thumb]");
+    th.src = `https://i.ytimg.com/vi/${vid}/maxresdefault.jpg`;
+    th.onerror = () => { th.onerror = () => (th.style.visibility = "hidden"); th.src = `https://i.ytimg.com/vi/${vid}/hqdefault.jpg`; };
+    $("[data-play]").addEventListener("click", (e) => {
+      const f = document.createElement("iframe");
+      f.src = `https://www.youtube-nocookie.com/embed/${vid}?autoplay=1&rel=0&modestbranding=1`;
+      f.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+      f.allowFullscreen = true;
+      f.title = cfg.video?.titulo || "Video";
+      e.currentTarget.replaceWith(f);
+    });
+  }
+
+  /* ---------- Navegación y barra de progreso ---------- */
   const nav = $("#nav");
   const burger = $(".nav__burger");
   burger.addEventListener("click", () => {
@@ -88,9 +120,12 @@
   });
   $$(".nav__links a").forEach((a) => a.addEventListener("click", () => nav.classList.remove("is-open")));
   const sticky = $(".sticky-cta");
+  const prog = $(".progress-line");
   const onScroll = () => {
     nav.classList.toggle("is-scrolled", scrollY > 40);
     sticky.classList.toggle("is-visible", scrollY > innerHeight * 0.8);
+    const max = document.documentElement.scrollHeight - innerHeight;
+    prog.style.setProperty("--p", max > 0 ? (scrollY / max).toFixed(4) : 0);
   };
   addEventListener("scroll", onScroll, { passive: true });
   onScroll();
@@ -104,7 +139,7 @@
   );
 
   /* ---------- Cuenta regresiva ---------- */
-  const target = new Date(cfg.evento?.fechaISO || "2026-11-07T08:00:00-05:00").getTime();
+  const target = new Date(cfg.evento?.fechaISO || "2026-11-07T14:00:00-05:00").getTime();
   const pad = (n) => String(n).padStart(2, "0");
   function tick() {
     let diff = Math.max(0, target - Date.now());
@@ -120,9 +155,8 @@
     });
     const compact = target > Date.now() ? `Faltan ${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s` : "¡Hoy es el taller!";
     $$('[data-countdown="compact"]').forEach((el) => (el.textContent = compact));
+    payTimer();
   }
-  tick();
-  setInterval(tick, 1000);
 
   /* ---------- Animaciones al hacer scroll ---------- */
   const io = new IntersectionObserver(
@@ -148,28 +182,260 @@
         el.textContent = Math.round(end * (1 - Math.pow(1 - p, 3)));
         if (p < 1) requestAnimationFrame(step);
       };
-      requestAnimationFrame(step);
+      if (!reduced) requestAnimationFrame(step);
       cio.unobserve(el);
     })
   );
   $$("[data-count]").forEach((el) => cio.observe(el));
 
-  /* ---------- Modal de inscripción ---------- */
+  /* ---------- Efectos: spotlight, botones magnéticos, tilt ---------- */
+  $$(".auto, .why2__item, .tl, .bento__item, .plan, .steps3 li, .case").forEach((el) => {
+    el.classList.add("spot");
+    el.addEventListener("pointermove", (e) => {
+      const r = el.getBoundingClientRect();
+      el.style.setProperty("--mx", e.clientX - r.left + "px");
+      el.style.setProperty("--my", e.clientY - r.top + "px");
+    });
+  });
+  if (!reduced && matchMedia("(hover: hover)").matches) {
+    $$(".magnetic").forEach((b) => {
+      b.addEventListener("pointermove", (e) => {
+        const r = b.getBoundingClientRect();
+        b.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.15}px, ${(e.clientY - r.top - r.height / 2) * 0.25}px)`;
+      });
+      b.addEventListener("pointerleave", () => (b.style.transform = ""));
+    });
+    $$("[data-tilt]").forEach((c) => {
+      c.addEventListener("pointermove", (e) => {
+        const r = c.getBoundingClientRect();
+        const x = (e.clientX - r.left) / r.width - 0.5, y = (e.clientY - r.top) / r.height - 0.5;
+        c.style.transform = `perspective(800px) rotateY(${x * 12}deg) rotateX(${-y * 12}deg)`;
+      });
+      c.addEventListener("pointerleave", () => (c.style.transform = ""));
+    });
+  }
+
+  /* ---------- Partículas del hero ---------- */
+  (function particles() {
+    const cv = $(".hero__particles");
+    if (!cv || reduced) return;
+    const ctx = cv.getContext("2d");
+    let w, h, pts, visible = true;
+    const resize = () => {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      w = cv.offsetWidth; h = cv.offsetHeight;
+      cv.width = w * dpr; cv.height = h * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const n = Math.min(70, Math.round((w * h) / 22000));
+      pts = Array.from({ length: n }, () => ({ x: Math.random() * w, y: Math.random() * h, vx: (Math.random() - 0.5) * 0.3, vy: (Math.random() - 0.5) * 0.3 }));
+    };
+    resize();
+    addEventListener("resize", resize);
+    new IntersectionObserver((e) => (visible = e[0].isIntersecting)).observe(cv);
+    (function frame() {
+      requestAnimationFrame(frame);
+      if (!visible || document.hidden) return;
+      ctx.clearRect(0, 0, w, h);
+      for (const p of pts) {
+        p.x += p.vx; p.y += p.vy;
+        if (p.x < 0 || p.x > w) p.vx *= -1;
+        if (p.y < 0 || p.y > h) p.vy *= -1;
+      }
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i];
+        ctx.fillStyle = "rgba(200,180,255,.55)";
+        ctx.beginPath(); ctx.arc(a.x, a.y, 1.4, 0, 6.3); ctx.fill();
+        for (let j = i + 1; j < pts.length; j++) {
+          const b = pts[j], d = Math.hypot(a.x - b.x, a.y - b.y);
+          if (d < 130) {
+            ctx.strokeStyle = `rgba(167,139,250,${(1 - d / 130) * 0.22})`;
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
+    })();
+  })();
+
+  /* ---------- Automatización animada del hero ---------- */
+  (async function workflow() {
+    const wf = $("#wf");
+    if (!wf) return;
+    const scenarios = [
+      { in: "“¿Ya está mi resultado?”", out: "Hola María 👋 Tu resultado de perfil lipídico ya está disponible. Descárgalo aquí de forma segura. Tu médico tratante te explicará los valores en tu próxima cita." },
+      { in: "“Quiero agendar control”", out: "¡Hola Carlos! Tengo disponible el martes a las 3:00 p.m. o el miércoles a las 9:30 a.m. con la Dra. Pérez. ¿Cuál prefieres? Te enviaré un recordatorio un día antes." },
+      { in: "“¿Debo ir en ayunas?”", out: "Hola Laura. Para tu glicemia y perfil lipídico necesitas ayuno de 10 a 12 horas; puedes tomar agua. Te esperamos de 6:30 a 9:00 a.m. con tu orden y documento." }
+    ];
+    const typed = $("[data-wf-typed]", wf), inEl = $("[data-wf-in]", wf), status = $("[data-wf-status]", wf), time = $("[data-wf-time]", wf);
+    const dots1 = $$('[data-dot="1"]', wf), dots2 = $$('[data-dot="2"]', wf);
+    const fire = (dots) => dots.forEach((c) => {
+      c.classList.add("is-on");
+      try { c.querySelector("animateMotion").beginElement(); } catch (e) {}
+      setTimeout(() => c.classList.remove("is-on"), 950);
+    });
+    let visible = true;
+    new IntersectionObserver((e) => (visible = e[0].isIntersecting)).observe(wf);
+    if (reduced) {
+      wf.dataset.phase = "3";
+      typed.textContent = scenarios[0].out;
+      status.textContent = "Listo ✓";
+      return;
+    }
+    let i = 0;
+    for (;;) {
+      while (!visible || document.hidden) await sleep(400);
+      const sc = scenarios[i++ % scenarios.length];
+      wf.dataset.phase = "1";
+      inEl.textContent = sc.in;
+      typed.textContent = "";
+      status.textContent = "Esperando…";
+      time.textContent = "0.0 s";
+      await sleep(600);
+      fire(dots1);
+      await sleep(950);
+      wf.dataset.phase = "2";
+      status.textContent = "Redactando…";
+      const t0 = performance.now();
+      for (let k = 0; k < sc.out.length; k += 2) {
+        typed.textContent = sc.out.slice(0, k + 2);
+        time.textContent = ((performance.now() - t0) / 1000).toFixed(1) + " s";
+        await sleep(22);
+      }
+      status.textContent = "Listo ✓";
+      await sleep(250);
+      fire(dots2);
+      await sleep(900);
+      wf.dataset.phase = "3";
+      await sleep(2600);
+    }
+  })();
+
+  /* ---------- Demo en vivo (consola) ---------- */
+  (function demo() {
+    const box = $("#console");
+    if (!box) return;
+    const cases = [
+      {
+        title: "nota_clinica_soap",
+        manual: "12 min",
+        input: "“Paciente femenina de 54 años, consulta por dolor de cabeza de tres días, sobre todo en la mañana. Tiene hipertensión, toma losartán 50 miligramos pero a veces se le olvida. Tensión hoy 150 sobre 95, frecuencia 78. No tiene déficit neurológico. Le explico adherencia y signos de alarma, control en una semana.”",
+        steps: ["Dictado recibido", "Anonimización", "Claude estructura", "Lista para la HC"],
+        output:
+          "NOTA CLÍNICA · FORMATO SOAP\n\nS: Mujer de 54 años con cefalea de 3 días, predominio matutino. Antecedente de HTA en manejo con losartán 50 mg, adherencia irregular.\n\nO: PA 150/95 mmHg · FC 78 lpm. Sin déficit neurológico.\n\nA: Cefalea en paciente con HTA no controlada, probable baja adherencia.\n\nP: Educación en adherencia. Signos de alarma explicados. Control de PA en 1 semana.\n\n⚠ Borrador para revisión y firma del médico."
+      },
+      {
+        title: "entrega_resultados_lab",
+        manual: "14 min",
+        input: "Evento del LIS → Paciente: María G. · Examen: Perfil lipídico · Estado: VALIDADO 07:42 a.m. · Canal preferido: WhatsApp · Médico tratante: Dr. Ruiz",
+        steps: ["Resultado validado", "Claude redacta", "Envío WhatsApp", "Registro en Sheets"],
+        output:
+          "MENSAJE PARA WHATSAPP\n\nHola María 👋\nTu resultado de *perfil lipídico* ya está disponible.\n\n📄 Descárgalo aquí de forma segura: [enlace]\n🩺 El Dr. Ruiz revisará contigo los valores en tu próxima cita.\n\n¿Necesitas agendar? Responde *CITA*.\n\n— Laboratorio Clínico\n\n✓ Registrado en hoja de control · 07:42"
+      },
+      {
+        title: "respuesta_glosa",
+        manual: "35 min",
+        input: "Glosa · Factura FE-4587 · Código 1.2 Pertinencia: “Ecografía abdominal total sin justificación clínica.” Soportes disponibles: HC del 03/10 (dolor en hipocondrio derecho, 5 días, Murphy +), orden médica, resultado de la ecografía.",
+        steps: ["Glosa recibida", "Revisa la historia", "Argumenta", "Borrador listo"],
+        output:
+          "RESPUESTA A GLOSA · FE-4587\n\nSe NO ACEPTA la glosa por pertinencia.\n\n1. La historia clínica del 03/10 registra dolor en hipocondrio derecho de 5 días con signo de Murphy positivo.\n2. Ante este cuadro, la ecografía abdominal es el estudio inicial indicado para descartar patología biliar.\n3. Existe orden médica y resultado que confirman la realización.\n\nSoportes: HC folio 12 · Orden médica · Informe ecográfico.\n\n⚠ Borrador para validación del auditor."
+      }
+    ];
+    let cur = 0, running = false, ran = false;
+    const stepsEl = $("[data-c-steps]", box), out = $("[data-c-out]", box), inEl = $("[data-c-in]", box), run = $("[data-c-run]", box);
+    function load(idx) {
+      cur = idx;
+      const c = cases[idx];
+      $$(".case", box).forEach((b) => b.classList.toggle("is-active", +b.dataset.case === idx));
+      $("[data-c-title]", box).textContent = c.title;
+      $("[data-c-manual]", box).textContent = c.manual;
+      $("[data-c-auto]", box).textContent = "—";
+      inEl.textContent = c.input;
+      stepsEl.innerHTML = c.steps.map((s, i) => `<li><b>0${i + 1}</b>${s}</li>`).join("");
+      out.innerHTML = '<span class="io__ph">Presiona “Ejecutar automatización”…</span>';
+    }
+    async function execute() {
+      if (running) return;
+      running = true;
+      run.classList.add("is-running");
+      const c = cases[cur], lis = $$("li", stepsEl), my = cur;
+      out.textContent = "";
+      const t0 = performance.now();
+      for (let i = 0; i < 3; i++) {
+        lis[i].classList.add("is-run");
+        await sleep(reduced ? 0 : 650);
+        lis[i].classList.add("is-done");
+        if (my !== cur) break;
+      }
+      lis[3]?.classList.add("is-run");
+      const chunk = reduced ? c.output.length : 3;
+      for (let k = 0; k < c.output.length && my === cur; k += chunk) {
+        out.textContent = c.output.slice(0, k + chunk);
+        await sleep(14);
+      }
+      if (my === cur) {
+        lis[3].classList.add("is-done");
+        $("[data-c-auto]", box).textContent = Math.max(3, ((performance.now() - t0) / 1000) | 0) + " seg";
+      }
+      running = false;
+      run.classList.remove("is-running");
+    }
+    $$(".case", box).forEach((b) => b.addEventListener("click", () => { running = false; run.classList.remove("is-running"); load(+b.dataset.case); execute(); }));
+    run.addEventListener("click", execute);
+    load(0);
+    new IntersectionObserver((e, o) => {
+      if (e[0].isIntersecting && !ran) { ran = true; o.disconnect(); setTimeout(execute, 500); }
+    }, { threshold: 0.35 }).observe(box);
+  })();
+
+  /* =========================================================
+     Inscripción → pago Bre-B → soporte
+     ========================================================= */
   const modal = $("#modal");
   const form = $("#regForm");
+  const REG_KEY = "bm-reg";
+  const endpoint = cfg.registro?.endpoint || "";
   let lastFocus = null;
+  let reg = null;
+  let payFile = null;
+  try { reg = JSON.parse(localStorage.getItem(REG_KEY) || "null"); } catch (e) {}
+  const saveReg = () => { try { localStorage.setItem(REG_KEY, JSON.stringify(reg)); } catch (e) {} };
+
+  async function post(payload) {
+    if (!endpoint) return false;
+    try {
+      await fetch(endpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(payload) });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function showStep(name) {
+    $$(".mstep", modal).forEach((s) => (s.hidden = s.dataset.step !== name));
+    const idx = { form: 0, pay: 1, done: 2 }[name];
+    $$("[data-msteps] li", modal).forEach((li, i) => {
+      li.classList.toggle("is-active", i === idx);
+      li.classList.toggle("is-done", i < idx);
+    });
+    $(".modal__main", modal).scrollTop = 0;
+    if (name === "pay") fillPay();
+    if (name === "done") fillDone();
+  }
+
   function openModal(mode) {
     lastFocus = document.activeElement;
-    $('[data-step="form"]').hidden = false;
-    $('[data-step="done"]').hidden = true;
-    if (mode) {
-      const r = form.querySelector(`input[name="modalidad"][value="${mode === "virtual" ? "Virtual" : "Presencial"}"]`);
-      if (r) r.checked = true;
+    if (reg && reg.status === "soporte") showStep("done");
+    else if (reg) showStep("pay");
+    else {
+      showStep("form");
+      if (mode) {
+        const r = form.querySelector(`input[name="modalidad"][value="${mode === "virtual" ? "Virtual" : "Presencial"}"]`);
+        if (r) r.checked = true;
+      }
+      setTimeout(() => form.querySelector('[name="nombre"]').focus(), 350);
     }
     modal.classList.add("is-open");
     modal.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
-    setTimeout(() => form.querySelector('[name="nombre"]').focus(), 350);
   }
   function closeModal() {
     modal.classList.remove("is-open");
@@ -181,6 +447,7 @@
   $$("[data-close]", modal).forEach((b) => b.addEventListener("click", closeModal));
   addEventListener("keydown", (e) => e.key === "Escape" && modal.classList.contains("is-open") && closeModal());
 
+  // Paso 1 → registro
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     const err = $(".form-error", form);
@@ -189,57 +456,200 @@
     let ok = true;
     $$("[required]", form).forEach((inp) => {
       const bad = inp.type === "checkbox" ? !inp.checked : !inp.value.trim() || (inp.type === "email" && !/^\S+@\S+\.\S+$/.test(inp.value));
-      if (bad) {
-        ok = false;
-        inp.closest(".field")?.classList.add("is-invalid");
-      }
+      if (bad) { ok = false; inp.closest(".field")?.classList.add("is-invalid"); }
     });
-    if (!ok) {
-      err.textContent = "Revisa los campos obligatorios y acepta el tratamiento de datos.";
-      return;
-    }
+    if (!ok) { err.textContent = "Revisa los campos obligatorios y acepta el tratamiento de datos."; return; }
+
     const data = Object.fromEntries(new FormData(form).entries());
     data.consentimiento = "Sí";
-    data.valor = money(data.modalidad === "Virtual" ? cfg.precios.virtual : cfg.precios.presencial);
+    data.valorNum = data.modalidad === "Virtual" ? cfg.precios.virtual : cfg.precios.presencial;
+    data.valor = money(data.valorNum);
     data.fecha = new Date().toLocaleString("es-CO");
-    data.origen = location.href;
+    data.origen = location.href.split("#")[0];
 
     const btn = form.querySelector('button[type="submit"]');
     btn.classList.add("is-loading");
-    $(".btn__label", btn).textContent = "Enviando…";
-
-    const endpoint = cfg.registro?.endpoint;
-    if (endpoint) {
-      try {
-        await fetch(endpoint, { method: "POST", mode: "no-cors", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(data) });
-      } catch (x) {
-        /* Si falla la red, igual se confirma por WhatsApp */
-      }
-    }
+    $(".btn__label", btn).textContent = "Apartando tu cupo…";
+    await post({ action: "registro", ...data });
     btn.classList.remove("is-loading");
-    $(".btn__label", btn).textContent = "Confirmar inscripción";
+    $(".btn__label", btn).textContent = "Continuar al pago";
 
-    const msg =
-      `Hola BioMarketing 👋 Quiero confirmar mi inscripción al curso *IA para el Sector Salud con Claude*.\n\n` +
-      `• Nombre: ${data.nombre}\n• Documento: ${data.documento}\n• Modalidad: ${data.modalidad} (${data.valor})\n` +
-      `• Perfil: ${data.perfil}\n• Correo: ${data.email}\n• Ciudad: ${data.ciudad || "-"}\n` +
-      (data.institucion ? `• Institución: ${data.institucion}\n` : "") +
-      (data.objetivo ? `• Quiero automatizar: ${data.objetivo}\n` : "") +
-      `\nQuedo atento(a) a los datos de pago.`;
-    const link = waLink(msg);
-
-    $("[data-done-name]").textContent = data.nombre.split(" ")[0];
-    $("[data-done-mode]").textContent = data.modalidad;
-    $("[data-done-price]").textContent = data.valor;
-    $("[data-done-wa]").href = link;
-    const pay = $("[data-done-pay]");
-    if (cfg.pago?.linkPago) {
-      pay.href = cfg.pago.linkPago;
-      pay.classList.remove("is-hidden");
-    }
-    $('[data-step="form"]').hidden = true;
-    $('[data-step="done"]').hidden = false;
+    reg = { data, ts: Date.now(), status: "pendiente" };
+    saveReg();
     form.reset();
-    if (cfg.registro?.abrirWhatsappAlEnviar !== false) window.open(link, "_blank", "noopener");
+    showStep("pay");
+    if (cfg.registro?.abrirWhatsappAlEnviar) window.open(waLink(regMessage()), "_blank", "noopener");
   });
+
+  function regMessage(extra = "") {
+    const d = reg.data;
+    return (
+      `Hola BioMarketing 👋 Me inscribí al curso *IA para el Sector Salud con Claude*.\n\n` +
+      `• Nombre: ${d.nombre}\n• Documento: ${d.documento}\n• Modalidad: ${d.modalidad} (${d.valor})\n` +
+      `• Perfil: ${d.perfil}\n• Correo: ${d.email}\n• WhatsApp: ${d.whatsapp}\n` +
+      (d.ciudad ? `• Ciudad: ${d.ciudad}\n` : "") +
+      (d.institucion ? `• Institución: ${d.institucion}\n` : "") +
+      (d.objetivo ? `• Quiero automatizar: ${d.objetivo}\n` : "") +
+      extra
+    );
+  }
+
+  // Paso 2 → pago
+  function fillPay() {
+    if (!reg) return;
+    const d = reg.data;
+    $("[data-p-name]").textContent = d.nombre.split(" ")[0];
+    $$("[data-p-llave], [data-p-llave2]").forEach((el) => (el.textContent = pago.llave || "@OTO262"));
+    $$("[data-p-titular], [data-p-titular2]").forEach((el) => (el.textContent = pago.titular || ""));
+    $("[data-p-amount]").textContent = d.valor;
+    $("[data-p-mode]").textContent = d.modalidad;
+    $("[data-p-wa]").href = waLink(regMessage(`\n✅ Ya realicé el pago por llave Bre-B ${pago.llave}. Adjunto el comprobante.`));
+    payTimer();
+  }
+  function payTimer() {
+    const el = $("[data-p-timer]");
+    if (!el || !reg) return;
+    const end = reg.ts + (pago.horasReserva || 24) * 36e5;
+    let diff = Math.max(0, end - Date.now());
+    const h = Math.floor(diff / 36e5); diff -= h * 36e5;
+    const m = Math.floor(diff / 6e4); diff -= m * 6e4;
+    const s = Math.floor(diff / 1e3);
+    el.innerHTML = `<b>${pad(h)}</b>:<b>${pad(m)}</b>:<b>${pad(s)}</b>`;
+  }
+
+  const toastEl = $("[data-copy-toast]");
+  async function copy(text, btn) {
+    try { await navigator.clipboard.writeText(text); }
+    catch (e) {
+      const t = document.createElement("textarea");
+      t.value = text; document.body.appendChild(t); t.select();
+      try { document.execCommand("copy"); } catch (x) {}
+      t.remove();
+    }
+    btn.classList.add("is-ok");
+    toastEl.textContent = `Copiado: ${text}`;
+    toastEl.classList.add("is-on");
+    setTimeout(() => { btn.classList.remove("is-ok"); toastEl.classList.remove("is-on"); }, 1800);
+  }
+  $$("[data-copy]").forEach((b) =>
+    b.addEventListener("click", () => copy(b.dataset.copy === "llave" ? pago.llave : String(reg?.data.valorNum || ""), b))
+  );
+
+  const drop = $("[data-drop]"), fileIn = $("[data-p-file]");
+  function setFile(f) {
+    if (!f) return;
+    if (f.size > 10 * 1024 * 1024) { $("[data-p-error]").textContent = "El archivo supera 10 MB. Sube una captura más liviana."; return; }
+    payFile = f;
+    $("[data-p-error]").textContent = "";
+    drop.classList.add("has-file");
+    $("[data-p-fname]").textContent = f.name;
+    const pv = $("[data-p-preview]");
+    if (f.type.startsWith("image/")) pv.src = URL.createObjectURL(f);
+    else pv.src = "assets/img/favicon.png";
+  }
+  fileIn.addEventListener("change", () => setFile(fileIn.files[0]));
+  ["dragenter", "dragover"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add("is-over"); }));
+  ["dragleave", "drop"].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove("is-over"); }));
+  drop.addEventListener("drop", (e) => setFile(e.dataTransfer.files[0]));
+
+  function fileToBase64(f) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onerror = reject;
+      r.onload = () => {
+        if (!f.type.startsWith("image/")) return resolve({ mime: f.type || "application/pdf", data: String(r.result).split(",")[1] });
+        const img = new Image();
+        img.onload = () => {
+          const sc = Math.min(1, 1600 / Math.max(img.width, img.height));
+          const c = document.createElement("canvas");
+          c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+          c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+          resolve({ mime: "image/jpeg", data: c.toDataURL("image/jpeg", 0.85).split(",")[1] });
+        };
+        img.onerror = () => resolve({ mime: f.type, data: String(r.result).split(",")[1] });
+        img.src = r.result;
+      };
+      r.readAsDataURL(f);
+    });
+  }
+
+  $("[data-p-send]").addEventListener("click", async (e) => {
+    const err = $("[data-p-error]");
+    if (!payFile) { err.textContent = "Sube la foto o PDF de tu comprobante, o usa la opción de WhatsApp."; drop.classList.add("is-over"); setTimeout(() => drop.classList.remove("is-over"), 900); return; }
+    const btn = e.currentTarget;
+    if (!endpoint) {
+      // Sin servidor: el soporte se adjunta en WhatsApp
+      window.open(waLink(regMessage(`\n✅ Ya realicé el pago por llave Bre-B ${pago.llave}. Te adjunto el comprobante.`)), "_blank", "noopener");
+      reg.status = "soporte"; reg.via = "whatsapp"; saveReg();
+      showStep("done");
+      return;
+    }
+    btn.classList.add("is-loading");
+    $(".btn__label", btn).textContent = "Enviando soporte…";
+    try {
+      const f = await fileToBase64(payFile);
+      const ext = f.mime.includes("pdf") ? "pdf" : "jpg";
+      await post({ action: "soporte", documento: reg.data.documento, nombre: reg.data.nombre, email: reg.data.email, whatsapp: reg.data.whatsapp, modalidad: reg.data.modalidad, valor: reg.data.valor, archivo: { name: `soporte_${reg.data.documento}.${ext}`, mime: f.mime, data: f.data } });
+    } catch (x) {}
+    btn.classList.remove("is-loading");
+    $(".btn__label", btn).textContent = "Enviar soporte y confirmar mi cupo";
+    reg.status = "soporte"; reg.via = "web"; saveReg();
+    showStep("done");
+  });
+
+  $("[data-p-reset]").addEventListener("click", () => {
+    if (!confirm("¿Iniciar una nueva inscripción? Se borrará la reserva guardada en este dispositivo.")) return;
+    reg = null; payFile = null;
+    try { localStorage.removeItem(REG_KEY); } catch (e) {}
+    drop.classList.remove("has-file");
+    showStep("form");
+  });
+
+  // Paso 3 → confirmación
+  function gcalDate(iso) { return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
+  function fillDone() {
+    if (!reg) return;
+    $("[data-d-name]").textContent = reg.data.nombre.split(" ")[0];
+    $("[data-d-mode]").textContent = `${reg.data.modalidad} · ${reg.data.valor}`;
+    const ev = cfg.evento || {};
+    const loc = reg.data.modalidad === "Virtual" ? ev.plataformaVirtual : `${ev.lugar || ""} ${ev.ciudad || ""}`.trim();
+    $("[data-d-cal]").href =
+      "https://calendar.google.com/calendar/render?action=TEMPLATE" +
+      `&text=${encodeURIComponent("Taller IA para el Sector Salud con Claude · BioMarketing")}` +
+      `&dates=${gcalDate(ev.fechaISO)}/${gcalDate(ev.fechaFinISO || ev.fechaISO)}` +
+      `&details=${encodeURIComponent(`Modalidad: ${reg.data.modalidad}. Lleva tu portátil y tu cuenta de Claude creada. Dudas: wa.me/${waNumber}`)}` +
+      `&location=${encodeURIComponent(loc || "")}`;
+    const viaWa = reg.via === "whatsapp";
+    const first = reg.data.nombre.split(" ")[0];
+    $("[data-d-title]").innerHTML = viaWa ? `¡Último paso, ${esc(first)}!` : `¡Soporte recibido, ${esc(first)}!`;
+    $("[data-d-sub]").textContent = viaWa
+      ? "Adjunta la foto del comprobante en el chat de WhatsApp que se abrió. Validamos tu pago y te confirmamos con todos los detalles."
+      : "Estamos validando tu pago. Te confirmamos por WhatsApp y correo con todos los detalles del taller.";
+    $("[data-d-proof]").textContent = viaWa ? "Comprobante listo para enviar por WhatsApp" : "Comprobante enviado";
+    $("[data-d-wa-label]").textContent = viaWa ? "Adjuntar comprobante en WhatsApp" : "Escribir a BioMarketing";
+    $("[data-d-wa]").href = waLink(regMessage(viaWa ? `\n✅ Ya realicé el pago por llave Bre-B ${pago.llave}. Te adjunto el comprobante.` : `\n✅ Ya envié mi comprobante desde la página.`));
+    confetti();
+  }
+
+  function confetti() {
+    const cv = $("[data-confetti]");
+    if (!cv || reduced) return;
+    const ctx = cv.getContext("2d");
+    const w = (cv.width = cv.offsetWidth), h = (cv.height = cv.offsetHeight);
+    const colors = ["#ff6b1a", "#ffb020", "#7c3aed", "#a78bfa", "#10b981", "#ffffff"];
+    const ps = Array.from({ length: 140 }, () => ({ x: w / 2, y: h * 0.3, vx: (Math.random() - 0.5) * 12, vy: Math.random() * -12 - 3, r: Math.random() * 6 + 3, c: colors[(Math.random() * colors.length) | 0], a: Math.random() * 6, va: (Math.random() - 0.5) * 0.3 }));
+    const t0 = performance.now();
+    (function f(t) {
+      ctx.clearRect(0, 0, w, h);
+      for (const p of ps) {
+        p.vy += 0.32; p.vx *= 0.99; p.x += p.vx; p.y += p.vy; p.a += p.va;
+        ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.a); ctx.fillStyle = p.c; ctx.fillRect(-p.r / 2, -p.r / 4, p.r, p.r / 2); ctx.restore();
+      }
+      if (t - t0 < 3200) requestAnimationFrame(f);
+      else ctx.clearRect(0, 0, w, h);
+    })(t0);
+  }
+
+  tick();
+  setInterval(tick, 1000);
 })();
