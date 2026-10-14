@@ -163,6 +163,8 @@
     });
     const compact = target > Date.now() ? `Faltan ${d}d ${pad(h)}h ${pad(m)}m ${pad(s)}s` : "¡Hoy es el taller!";
     $$('[data-countdown="compact"]').forEach((el) => (el.textContent = compact));
+    const dias = target <= Date.now() ? "¡Hoy es el taller!" : d > 1 ? `Faltan ${d} días` : d === 1 ? "¡Falta 1 día!" : `Faltan ${h} h ${pad(m)} min`;
+    $$('[data-countdown="days"]').forEach((el) => (el.textContent = dias));
     payTimer();
   }
 

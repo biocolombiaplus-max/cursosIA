@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261014i" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261014j" />
 </head>
 <body>
 
@@ -111,10 +111,31 @@
         En una tarde construyes <strong>automatizaciones reales que trabajan solas</strong>: entrega de resultados, notas clínicas, glosas, agenda, PQRS y contenido para redes. Diseñadas para tu perfil profesional. Sin programar.
       </p>
 
-      <div class="hero__meta reveal">
-        <div class="meta-chip"><svg><use href="#i-cal"/></svg><span><small>Sábado 7 nov 2026</small><b>2:00 – 6:00 p.m.</b></span></div>
-        <div class="meta-chip"><svg><use href="#i-pin"/></svg><span><small>Presencial Cúcuta</small><b data-price="presencial">$180.000</b></span></div>
-        <div class="meta-chip"><svg><use href="#i-live"/></svg><span><small>Virtual en vivo</small><b data-price="virtual">$120.000</b></span></div>
+      <div class="ticket reveal" aria-label="Fecha, modalidades y precios">
+        <div class="ticket__top">
+          <span class="ticket__date"><span class="ticket__cal"><small>NOV</small><b>7</b></span><span><b>Sábado 7 de noviembre</b><small>2:00 – 6:00 p.m. · hora Colombia</small></span></span>
+          <span class="ticket__live"><i></i><span data-countdown="days">Inscripciones abiertas</span></span>
+        </div>
+        <div class="ticket__plans">
+          <button type="button" class="tplan tplan--hot" data-open-form="presencial">
+            <span class="tplan__flag">Más elegido</span>
+            <span class="tplan__tag"><svg><use href="#i-pin"/></svg>Presencial · Cúcuta</span>
+            <b class="tplan__price" data-price="presencial">$220.000</b>
+            <small class="tplan__sub">o reserva con <span data-price="presencialReserva">$120.000</span></small>
+            <span class="tplan__chip">Ahorras <span data-save>$20.000</span> pagando completo</span>
+          </button>
+          <button type="button" class="tplan" data-open-form="virtual">
+            <span class="tplan__tag"><svg><use href="#i-live"/></svg>Virtual en vivo</span>
+            <b class="tplan__price" data-price="virtual">$120.000</b>
+            <small class="tplan__sub">Desde cualquier ciudad</small>
+            <span class="tplan__chip tplan__chip--v">Mismo día y horario</span>
+          </button>
+        </div>
+        <div class="ticket__perks">
+          <span><svg><use href="#i-cert"/></svg>Certificado incluido</span>
+          <span><svg><use href="#i-users"/></svg><span>−<span data-grupo-desc>10</span>% grupos de <span data-grupo-min>3</span>+</span></span>
+          <span class="is-hot"><svg><use href="#i-bolt"/></svg>Cupos limitados</span>
+        </div>
       </div>
 
       <div class="hero__ctas reveal">
@@ -1019,9 +1040,9 @@
 <div class="copy-toast" data-copy-toast>Copiado ✓</div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261014i"></script>
-<script src="assets/js/main.js?v=20261014i"></script>
-<script src="assets/js/live.js?v=20261014i"></script>
-<script src="assets/js/whatsapp.js?v=20261014i"></script>
+<script src="assets/js/store.js?v=20261014j"></script>
+<script src="assets/js/main.js?v=20261014j"></script>
+<script src="assets/js/live.js?v=20261014j"></script>
+<script src="assets/js/whatsapp.js?v=20261014j"></script>
 </body>
 </html>
