@@ -182,3 +182,26 @@ code { background: #efeaf9; padding: 2px 6px; border-radius: 6px; font-size: 0.8
   .person__actions { grid-column: 1 / -1; justify-content: flex-start; }
   .sigrow { flex-direction: column; align-items: flex-start; }
 }
+
+/* ---------- Publicación automática ---------- */
+.a-btn--publish { position: relative; overflow: hidden; box-shadow: 0 10px 26px -10px rgba(255,107,26,.9); }
+.a-btn--publish::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255,255,255,.55) 50%, transparent 70%); transform: translateX(-120%); animation: pubShine 3.2s ease-in-out infinite; }
+@keyframes pubShine { 0% { transform: translateX(-120%); } 55%, 100% { transform: translateX(120%); } }
+.a-btn.is-loading { pointer-events: none; opacity: .85; }
+.a-btn.is-loading span::before { content: ""; display: inline-block; width: 12px; height: 12px; margin-right: 8px; border-radius: 50%; border: 2px solid currentColor; border-top-color: transparent; vertical-align: -1px; animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.muted.ok { color: #047857; font-weight: 700; }
+.pcard--wide { grid-column: 1 / -1; }
+.gh-status { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: #fef2f2; color: #b91c1c; font-size: .82rem; margin-bottom: 10px; }
+.gh-status .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.gh-status.is-ok { background: #ecfdf5; color: #047857; }
+.gh-steps { margin: 6px 0 14px; padding-left: 20px; color: var(--muted); font-size: .9rem; line-height: 1.7; }
+.gh-steps a { color: var(--violet); font-weight: 700; }
+.gh-steps b { color: var(--text); }
+.gh-connect { display: flex; gap: 8px; flex-wrap: wrap; }
+.gh-connect input { flex: 1 1 280px; padding: 11px 14px; border-radius: 999px; border: 1.5px solid var(--line); font-family: ui-monospace, monospace; }
+.gh-connect input:focus { outline: none; border-color: var(--violet); }
+.gh-adv { margin-top: 10px; }
+.gh-adv summary { cursor: pointer; font-weight: 700; font-size: .85rem; color: var(--muted); }
+.gh-adv .form-grid { padding: 12px 0 0; border: 0; }
+@media (max-width: 860px) { .topline__actions { width: 100%; } .topline__actions .a-btn { flex: 1; } }

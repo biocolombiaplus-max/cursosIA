@@ -38,18 +38,13 @@ Sitio 100% estático alojado en **Cloudflare Pages** (gratis, sin Vercel).
 
 En ambos casos cada cambio en GitHub se publica solo, y `_headers`, `_redirects` y `404.html` funcionan igual.
 
-## Publicar cambios hechos en el panel
+## Publicar cambios hechos en el panel (automático)
 
-1. En `/admin` → **Publicar** → **Descargar site-config.js**.
-2. En GitHub abre `public/assets/js/` → **Add file → Upload files** → sube el `site-config.js` descargado → **Commit changes**.
-3. Cloudflare publica la nueva versión en ~1 minuto (este archivo no se guarda en caché).
+1. Entra por el botón discreto **Iniciar sesión** al final de la landing (o `/admin`).
+2. La primera vez, en **Publicar**, conecta GitHub con un token *fine-grained* (solo repositorio `cursosIA`, permiso **Contents: Read and write**). Se guarda solo en ese navegador.
+3. Haz tus cambios (fotos, video, textos, precios…) y presiona **Publicar en la web**. El panel guarda la configuración en GitHub, Cloudflare la publica sola y el panel avisa “✓ En vivo para todos” cuando está lista (~1 minuto).
 
-## Flujo del inscrito
-
-1. Llena el formulario → su cupo queda apartado 24 h (contador visible).
-2. Ve la tarjeta de pago **Llave Bre-B @OTO262** (titular Juan Carlos Cáceres) con botones para copiar llave y valor.
-3. Sube el comprobante en la misma página → queda en Google Drive, se marca “Soporte recibido” en la hoja y le llega un correo de confirmación (requiere el Apps Script). Sin Apps Script, se abre WhatsApp para adjuntarlo.
-4. Pantalla de confirmación con botón para agregar el taller a Google Calendar.
+Plan B sin token: *Publicar → Copia de seguridad → Descargar site-config.js* y súbelo a `public/assets/js/` en GitHub.
 
 ## Panel administrativo (`/admin.html`)
 

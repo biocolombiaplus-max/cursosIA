@@ -53,8 +53,9 @@
         <p class="muted" id="draftState">Los cambios se guardan como borrador en este navegador.</p>
       </div>
       <div class="topline__actions">
-        <button class="a-btn a-btn--ghost" id="discard">Descartar borrador</button>
-        <button class="a-btn a-btn--primary" id="save">Guardar cambios</button>
+        <button class="a-btn a-btn--ghost" id="discard">Descartar cambios</button>
+        <button class="a-btn a-btn--ghost" id="save">Guardar borrador</button>
+        <button class="a-btn a-btn--primary a-btn--publish" id="publish"><span>Publicar en la web</span></button>
       </div>
     </header>
 
@@ -198,22 +199,40 @@
     <!-- Publicar -->
     <section class="view" data-view="publicar">
       <div class="publish">
-        <div class="pcard">
-          <h3>1 · Vista previa</h3>
-          <p>Con “Guardar cambios” ves los cambios en <b>este navegador</b> al abrir la landing.</p>
-          <a class="a-btn a-btn--ghost" href="./" target="_blank">Abrir landing ↗</a>
-        </div>
-        <div class="pcard pcard--hl">
-          <h3>2 · Publicar para todos</h3>
-          <p>Descarga el archivo <code>site-config.js</code> y en GitHub súbelo a la carpeta <code>public/assets/js/</code> (Add file → Upload files → Commit). Cloudflare lo publica solo en ~1 minuto y todos ven los cambios.</p>
-          <button class="a-btn a-btn--primary" id="exportJs">Descargar site-config.js</button>
+        <div class="pcard pcard--hl pcard--wide">
+          <div class="gh-status" id="ghStatus"><span class="dot"></span><b>GitHub no conectado</b></div>
+          <h3>Publicación automática</h3>
+          <p>Con el botón <b>Publicar en la web</b> (arriba a la derecha) tus fotos, textos y precios quedan en línea para todos en ~1 minuto. Solo hay que conectar GitHub <b>una vez</b> en este computador:</p>
+          <ol class="gh-steps">
+            <li>Abre <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">GitHub → Nuevo token (fine-grained) ↗</a> con tu cuenta <b>biocolombiaplus-max</b>.</li>
+            <li><b>Token name:</b> Panel landing · <b>Expiration:</b> 1 año (o la máxima).</li>
+            <li><b>Repository access:</b> <i>Only select repositories</i> → <b>cursosIA</b>.</li>
+            <li><b>Permissions → Repository permissions → Contents:</b> <i>Read and write</i>.</li>
+            <li><b>Generate token</b>, cópialo y pégalo aquí:</li>
+          </ol>
+          <div class="gh-connect">
+            <input type="password" id="ghToken" placeholder="github_pat_…" autocomplete="off" />
+            <button class="a-btn a-btn--primary" id="ghSave">Conectar</button>
+            <button class="a-btn a-btn--ghost" id="ghForget" hidden>Desconectar</button>
+          </div>
+          <p class="muted">La clave se guarda solo en este navegador y solo puede modificar el repositorio cursosIA. Nunca se publica en la web.</p>
+          <details class="gh-adv">
+            <summary>Avanzado</summary>
+            <div class="form-grid">
+              <label>Usuario u organización<input id="ghOwner" /></label>
+              <label>Repositorio<input id="ghRepo" /></label>
+              <label>Rama que publica Cloudflare<input id="ghBranch" /></label>
+              <label>Archivo<input id="ghPath" /></label>
+            </div>
+          </details>
           <p class="muted" id="sizeInfo"></p>
         </div>
         <div class="pcard">
           <h3>Copia de seguridad</h3>
-          <p>Exporta o importa toda la configuración en JSON.</p>
+          <p>Exporta o importa toda la configuración. Si algún día no puedes publicar automáticamente, descarga <code>site-config.js</code> y súbelo a GitHub en <code>public/assets/js/</code>.</p>
           <div class="row">
             <button class="a-btn a-btn--ghost" id="exportJson">Exportar JSON</button>
+            <button class="a-btn a-btn--ghost" id="exportJs">Descargar site-config.js</button>
             <label class="a-btn a-btn--ghost file-btn">Importar JSON<input type="file" accept="application/json" id="importJson" /></label>
           </div>
         </div>

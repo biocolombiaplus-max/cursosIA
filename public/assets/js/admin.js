@@ -36,7 +36,8 @@
   }
   function markDirty() {
     dirty = true;
-    $("#draftState").textContent = "Tienes cambios sin guardar.";
+    $("#draftState").textContent = "Tienes cambios sin publicar.";
+    $("#draftState").classList.remove("ok");
     $("#draftState").classList.add("warn");
   }
 
@@ -133,7 +134,7 @@
   async function start() {
     $("#login").hidden = true;
     $("#app").hidden = false;
-    if (await window.BMStore.hasDraft()) $("#draftState").textContent = "Viendo tu borrador guardado (aún no publicado para todos).";
+    if (await window.BMStore.hasDraft()) $("#draftState").textContent = "Tienes un borrador sin publicar. Presiona “Publicar en la web” cuando esté listo.";
     renderSections();
     renderGallery();
     renderTestis();
@@ -315,7 +316,7 @@
     try {
       await window.BMStore.saveDraft(cfg);
       dirty = false;
-      $("#draftState").textContent = "Guardado. Abre la landing en este navegador para ver los cambios. Para publicarlos para todos ve a “Publicar”.";
+      $("#draftState").textContent = "Borrador guardado (solo lo ves tú). Presiona “Publicar en la web” para que lo vean todos.";
       $("#draftState").classList.remove("warn");
       toast("Cambios guardados ✓", "ok");
       updateSize();
@@ -324,7 +325,7 @@
     }
   });
   $("#discard").addEventListener("click", async () => {
-    if (!confirm("¿Descartar el borrador y volver a la versión publicada?")) return;
+    if (!confirm("¿Descartar los cambios sin publicar y volver a la versión que está en línea?")) return;
     await window.BMStore.clearDraft();
     location.reload();
   });
@@ -347,9 +348,161 @@
   }
   function updateSize() {
     const size = new Blob([buildJs()]).size / 1024 / 1024;
-    $("#sizeInfo").textContent = `Tamaño actual: ${size.toFixed(2)} MB${size > 4 ? " · Es pesado: considera usar URLs para algunas imágenes o fotos más livianas." : ""}`;
+    $("#sizeInfo").textContent = `Tamaño de la configuración: ${size < 1 ? Math.max(1, Math.round(size * 1024)) + " KB" : size.toFixed(1) + " MB"}${size > 4 ? " · Es pesado: considera usar URLs para algunas imágenes o fotos más livianas." : ""}`;
   }
   $("#exportJs").addEventListener("click", () => { download("site-config.js", buildJs(), "text/javascript"); toast("Archivo descargado ✓", "ok"); });
+
+  /* =========================================================
+     Publicación automática (GitHub → Cloudflare)
+     ========================================================= */
+  const GH_DEFAULT = { owner: "biocolombiaplus-max", repo: "cursosIA", branch: "claude/modest-brahmagupta-1tkxdp", path: "public/assets/js/site-config.js", token: "" };
+  let gh = { ...GH_DEFAULT, ...((await window.BMStore.kvGet("github")) || {}) };
+  const saveGh = () => window.BMStore.kvSet("github", gh);
+
+  function ghStatus(ok, text) {
+    const el = $("#ghStatus");
+    el.classList.toggle("is-ok", !!ok);
+    el.querySelector("b").textContent = text;
+    $("#ghForget").hidden = !gh.token;
+    $("#ghToken").value = "";
+    $("#ghToken").placeholder = gh.token ? "•••••••••• (conectado)" : "github_pat_…";
+  }
+  ["Owner", "Repo", "Branch", "Path"].forEach((k) => {
+    const inp = $("#gh" + k), key = k.toLowerCase();
+    inp.value = gh[key];
+    inp.addEventListener("change", () => { gh[key] = inp.value.trim() || GH_DEFAULT[key]; saveGh(); });
+  });
+
+  async function ghApi(method, url, body) {
+    const r = await fetch(`https://api.github.com/repos/${gh.owner}/${gh.repo}${url}`, {
+      method,
+      headers: { Authorization: `Bearer ${gh.token}`, Accept: "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28", ...(body ? { "Content-Type": "application/json" } : {}) },
+      body: body ? JSON.stringify(body) : undefined
+    });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) {
+      const e = new Error(j.message || "Error " + r.status);
+      e.status = r.status;
+      throw e;
+    }
+    return j;
+  }
+  function ghError(e) {
+    if (e.status === 401) return "La clave de GitHub no es válida o venció. Crea una nueva en Publicar.";
+    if (e.status === 403) return "La clave de GitHub no tiene permiso de escritura (Contents: Read and write).";
+    if (e.status === 404) return "No se encontró el repositorio o la rama. Revisa Publicar → Avanzado.";
+    if (e.status === 413 || /too large/i.test(e.message)) return "La configuración es demasiado pesada. Usa fotos más livianas.";
+    return "No se pudo publicar: " + e.message;
+  }
+
+  async function ghCheck() {
+    if (!gh.token) return ghStatus(false, "GitHub no conectado");
+    try {
+      await ghApi("GET", `/branches/${encodeURIComponent(gh.branch)}`);
+      ghStatus(true, `Conectado a ${gh.owner}/${gh.repo}`);
+      return true;
+    } catch (e) {
+      ghStatus(false, ghError(e));
+      return false;
+    }
+  }
+  $("#ghSave").addEventListener("click", async () => {
+    const t = $("#ghToken").value.trim();
+    if (!t) return toast("Pega la clave de GitHub primero", "err");
+    gh.token = t;
+    await saveGh();
+    if (await ghCheck()) toast("GitHub conectado ✓ Ya puedes publicar con un clic", "ok");
+    else toast("No se pudo conectar. Revisa la clave y los permisos.", "err");
+  });
+  $("#ghForget").addEventListener("click", async () => {
+    gh.token = "";
+    await saveGh();
+    ghStatus(false, "GitHub no conectado");
+  });
+  ghCheck();
+
+  function b64utf8(str) {
+    const bytes = new TextEncoder().encode(str);
+    let bin = "";
+    for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+    return btoa(bin);
+  }
+
+  async function commitConfig(content, retry = true) {
+    let sha;
+    try {
+      sha = (await ghApi("GET", `/contents/${gh.path}?ref=${encodeURIComponent(gh.branch)}`)).sha;
+    } catch (e) {
+      if (e.status !== 404) throw e;
+    }
+    try {
+      return await ghApi("PUT", `/contents/${gh.path}`, {
+        message: `Panel: publicar cambios de la landing (${new Date().toLocaleString("es-CO")})`,
+        content: b64utf8(content),
+        branch: gh.branch,
+        ...(sha ? { sha } : {})
+      });
+    } catch (e) {
+      if (retry && (e.status === 409 || e.status === 422)) return commitConfig(content, false);
+      throw e;
+    }
+  }
+
+  let watching = 0;
+  async function waitLive(stamp) {
+    const my = ++watching;
+    const t0 = Date.now();
+    while (my === watching && Date.now() - t0 < 5 * 60e3) {
+      await new Promise((r) => setTimeout(r, 5000));
+      try {
+        const txt = await (await fetch(`assets/js/site-config.js?v=${Date.now()}`, { cache: "no-store" })).text();
+        const m = txt.match(/"_publicado":\s*(\d+)/);
+        if (m && +m[1] >= stamp) {
+          setState(`✓ En vivo para todos desde las ${new Date().toLocaleTimeString("es-CO", { hour: "numeric", minute: "2-digit" })}`, "ok");
+          toast("¡Tu página ya está actualizada en línea! ✓", "ok");
+          return;
+        }
+      } catch (e) {}
+    }
+    if (my === watching) setState("Publicado en GitHub. Si en unos minutos no ves los cambios, revisa la última compilación en Cloudflare.", "");
+  }
+
+  function setState(text, kind) {
+    const el = $("#draftState");
+    el.textContent = text;
+    el.classList.toggle("warn", kind === "warn");
+    el.classList.toggle("ok", kind === "ok");
+  }
+
+  $("#publish").addEventListener("click", async () => {
+    const btn = $("#publish");
+    if (!gh.token) {
+      $$(".side__nav button").find((b) => b.dataset.view === "publicar").click();
+      $("#ghToken").focus();
+      return toast("Conecta GitHub una sola vez para publicar con un clic", "err");
+    }
+    if (!confirm("¿Publicar los cambios en la página para todos los visitantes?")) return;
+    btn.classList.add("is-loading");
+    btn.querySelector("span").textContent = "Publicando…";
+    const stamp = Date.now();
+    const prev = cfg._publicado;
+    cfg._publicado = stamp;
+    try {
+      await commitConfig(buildJs());
+      await window.BMStore.markPublished(cfg);
+      dirty = false;
+      setState("Publicado ✓ Cloudflare está actualizando la página (≈1 minuto)…", "");
+      toast("Publicado ✓ La página se actualiza en ~1 minuto", "ok");
+      waitLive(stamp);
+    } catch (e) {
+      cfg._publicado = prev;
+      setState(ghError(e), "warn");
+      toast(ghError(e), "err");
+    }
+    btn.classList.remove("is-loading");
+    btn.querySelector("span").textContent = "Publicar en la web";
+  });
+
   $("#exportJson").addEventListener("click", () => download("biomarketing-config.json", JSON.stringify(cfg, null, 2), "application/json"));
   $("#importJson").addEventListener("change", async (e) => {
     const f = e.target.files[0];
@@ -373,7 +526,7 @@
     await window.BMStore.saveDraft(cfg);
     sessionStorage.setItem(SESSION, cfg.admin.passwordHash);
     $("#newPwd").value = $("#newPwd2").value = "";
-    toast("Contraseña actualizada. Publica el site-config.js para aplicarla en línea.", "ok");
+    toast("Contraseña cambiada. Presiona “Publicar en la web” para aplicarla en línea.", "ok");
   });
 
   /* =========================================================

@@ -73,8 +73,20 @@
       return clone(window.SITE_CONFIG || {});
     },
     async load() {
+      let base = this.published();
+      // Recién publicado desde el panel: mientras Cloudflare termina de actualizar,
+      // este navegador ya muestra la versión nueva.
+      const pending = await idbGet("pending");
+      if (pending) {
+        if ((pending._publicado || 0) > (base._publicado || 0)) base = deepMerge(base, pending);
+        else idbDel("pending").catch(() => {});
+      }
       const draft = await idbGet("draft");
-      return deepMerge(this.published(), draft || {});
+      return deepMerge(base, draft || {});
+    },
+    async markPublished(cfg) {
+      await idbSet("pending", clone(cfg));
+      await idbDel("draft");
     },
     async hasDraft() {
       return !!(await idbGet("draft"));
