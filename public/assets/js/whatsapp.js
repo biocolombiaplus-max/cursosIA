@@ -27,6 +27,7 @@
     instructor: ["Habla directo con Juan Carlos", "Escríbele a Juan Carlos", () => "Hola Juan Carlos 👋 Me gustaría aprender contigo a automatizar con IA. ¿Cómo separo mi cupo?"],
     video: ["¿Te gustó la experiencia?", "Quiero vivirla", () => "Hola 👋 Vi el video del curso anterior y quiero participar en este. ¿Cómo me inscribo?"],
     certificado: ["¿Dudas sobre el certificado?", "Pregunta por el certificado", () => "Hola 👋 Quiero saber más sobre el certificado del curso de IA para el sector salud."],
+    incluye: ["¿Quieres ver el kit completo?", "", () => "Hola 👋 Me interesa todo lo que incluye el curso de IA en salud (kit de automatizaciones, plantillas y certificado). ¿Me cuentas más?"],
     como: ["¿Te ayudamos a inscribirte?", "Inscríbeme por WhatsApp", () => "Hola 👋 Quiero inscribirme al curso de IA en salud y pagar con llave Bre-B. ¿Me guías paso a paso?"],
     modalidades: ["¿Dudas sobre precios o pagos?", "Resolver mis dudas de pago", () => "Hola 👋 Quiero reservar mi cupo. ¿Me confirmas disponibilidad y las opciones de pago (completo o reserva)?"],
     grupo: ["", "", () => "Hola 👋 Somos un grupo de la misma institución y queremos inscribirnos con el 10% de descuento. ¿Cómo lo hacemos?"],
