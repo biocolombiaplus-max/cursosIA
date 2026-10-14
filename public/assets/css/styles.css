@@ -1291,3 +1291,36 @@ svg { width: 1.2em; height: 1.2em; flex: none; }
 .modal__dialog { grid-template-rows: minmax(0, 1fr); }
 .modal__main { max-height: calc(100vh - 40px); max-height: calc(100dvh - 40px); overflow-y: auto; overscroll-behavior: contain; }
 @media (max-width: 640px) { .modal__main { max-height: 94vh; max-height: 94dvh; } }
+
+/* =========================================================
+   Hero premium: grafito neutro, foto visible, menos morado
+   ========================================================= */
+.hero { background: radial-gradient(90% 70% at 85% 10%, #1a1830 0%, #0b0b13 55%, #08080e 100%); }
+.hero .sec__bg.has-img { filter: saturate(.9) contrast(1.05); }
+.hero .sec__bg.has-img::after {
+  background:
+    linear-gradient(90deg, rgba(8,8,14,.96) 0%, rgba(8,8,14,.9) 32%, rgba(8,8,14, calc(var(--ov, .75) - .15)) 58%, rgba(8,8,14, calc(var(--ov, .75) - .3)) 100%),
+    linear-gradient(0deg, #08080e 0%, rgba(8,8,14,0) 28%),
+    linear-gradient(180deg, rgba(8,8,14,.7) 0%, rgba(8,8,14,0) 22%);
+}
+.hero__aurora { opacity: .32; filter: blur(90px); }
+.hero__aurora i:nth-child(1) { background: #3b2a8f; }
+.hero__aurora i:nth-child(2) { background: #ff7a1a; opacity: .45; }
+.hero__aurora i:nth-child(3) { display: none; }
+.hero__grid { opacity: .35; }
+.hero__particles { opacity: .35; }
+.hero .eyebrow--dark { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.12); }
+.hero .meta-chip { background: rgba(255,255,255,.045); border-color: rgba(255,255,255,.1); }
+/* Flujo con vidrio grafito en lugar de morado */
+.wf {
+  background: linear-gradient(160deg, rgba(24,24,38,.78), rgba(10,10,18,.88));
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 60px 120px -40px rgba(0,0,0,.95), 0 0 0 1px rgba(255,255,255,.04), 0 0 90px -40px rgba(255,140,40,.35);
+  backdrop-filter: blur(18px) saturate(1.2);
+}
+.node { background: rgba(18,18,30,.92); }
+.n2 { background: linear-gradient(150deg, #2a1810, #15131f); }
+.wf__out { background: rgba(0,0,0,.35); }
+/* Banda de cifras y cuenta regresiva en el mismo tono */
+.hero .countdown { background: rgba(255,255,255,.035); }
+.stats-band { background: linear-gradient(180deg, #08080e, #0d0b1a); }
