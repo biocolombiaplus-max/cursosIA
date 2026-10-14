@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261014b" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261014c" />
 </head>
 <body>
 
@@ -606,8 +606,15 @@
       <ul class="creds reveal" data-creds></ul>
       <ul class="checks checks--dark reveal" data-list="instructor.puntos"></ul>
       <div class="instructor__sign reveal">
-        <span class="sign" data-bind="instructor.nombre">Juan Carlos Cáceres M.</span>
-        <button class="btn btn--glow" data-open-form>Aprender con Juan Carlos <svg><use href="#i-arrow"/></svg></button>
+        <div class="signcard">
+          <span class="signcard__av"><img data-instructor-mini alt="" hidden /><i>JC</i></span>
+          <div class="signcard__txt">
+            <b data-bind="instructor.nombre">Juan Carlos Cáceres M.</b>
+            <small>Instructor · Bacteriólogo · MSc.</small>
+            <span class="signcard__ok"><svg><use href="#i-shield"/></svg>Perfil verificado por BioMarketing</span>
+          </div>
+        </div>
+        <button class="btn btn--glow magnetic" data-open-form>Aprender con Juan Carlos <svg><use href="#i-arrow"/></svg></button>
       </div>
     </div>
   </div>
@@ -967,8 +974,8 @@
 <div class="copy-toast" data-copy-toast>Copiado ✓</div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261014b"></script>
-<script src="assets/js/main.js?v=20261014b"></script>
-<script src="assets/js/live.js?v=20261014b"></script>
+<script src="assets/js/store.js?v=20261014c"></script>
+<script src="assets/js/main.js?v=20261014c"></script>
+<script src="assets/js/live.js?v=20261014c"></script>
 </body>
 </html>

@@ -70,6 +70,14 @@
     }
   });
 
+  // Foto pequeña del instructor en su tarjeta de presentación
+  const mini = $("[data-instructor-mini]");
+  if (mini && secs.instructor?.media) {
+    mini.src = secs.instructor.media;
+    mini.hidden = false;
+    mini.nextElementSibling.hidden = true;
+  }
+
   /* ---------- Galería y testimonios ---------- */
   const gal = (cfg.galeria || []).filter((g) => g && g.src);
   if (gal.length) {

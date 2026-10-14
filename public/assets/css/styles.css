@@ -821,8 +821,20 @@ svg { width: 1.2em; height: 1.2em; flex: none; }
 .creds li { display: flex; gap: 14px; align-items: center; padding: 14px 16px; border-radius: 16px; background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1); }
 .creds li svg { width: 36px; height: 36px; padding: 8px; border-radius: 10px; background: var(--grad); color: #2b1300; }
 .creds li b { font-size: .98rem; }
-.instructor__sign { display: flex; align-items: center; gap: 28px; flex-wrap: wrap; margin-top: 8px; }
-.sign { font-family: var(--ff-serif); font-style: italic; font-size: 2rem; color: rgba(255,255,255,.85); transform: rotate(-4deg); border-bottom: 1px solid rgba(255,255,255,.25); padding: 0 10px 4px; }
+.instructor__sign { display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; margin-top: 10px; padding: 16px 16px 16px 18px; border-radius: 22px; background: linear-gradient(120deg, rgba(255,255,255,.07), rgba(255,255,255,.02)); border: 1px solid rgba(255,255,255,.12); box-shadow: inset 0 1px 0 rgba(255,255,255,.08); }
+.signcard { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.signcard__av { position: relative; flex: none; width: 58px; height: 58px; border-radius: 50%; padding: 2px; background: var(--grad-brand); box-shadow: 0 10px 24px -10px rgba(124,58,237,.9); }
+.signcard__av img, .signcard__av i { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: grid; place-items: center; background: #160c3a; color: #fff; font-style: normal; font-weight: 800; font-size: 1.05rem; letter-spacing: .02em; border: 2px solid #120a30; }
+.signcard__av i[hidden], .signcard__av img[hidden] { display: none; }
+.signcard__av::after { content: "✓"; position: absolute; right: -2px; bottom: -2px; width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: #10b981; color: #fff; font-size: .62rem; font-weight: 800; border: 2px solid #120a30; }
+.signcard__txt { min-width: 0; line-height: 1.25; }
+.signcard__txt b { display: block; font-size: 1.15rem; font-weight: 800; letter-spacing: -.02em; color: #fff; }
+.signcard__txt small { display: block; color: rgba(236,232,255,.65); font-size: .82rem; margin-top: 2px; }
+.signcard__ok { display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; font-size: .72rem; font-weight: 700; color: #6ee7b7; }
+.signcard__ok svg { width: 13px; height: 13px; }
+.instructor__sign .btn { flex: none; }
+@media (max-width: 1180px) { .instructor__sign .btn { flex: 1 1 100%; } }
+@media (max-width: 640px) { .instructor__sign { padding: 14px; } }
 
 /* ---------- Video ---------- */
 .player { position: relative; max-width: 980px; margin: 0 auto; }
