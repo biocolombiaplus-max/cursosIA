@@ -443,7 +443,15 @@
     document.body.style.overflow = "";
     lastFocus && lastFocus.focus && lastFocus.focus();
   }
-  $$("[data-open-form]").forEach((b) => b.addEventListener("click", () => openModal(b.dataset.openForm)));
+  function updateTotal() {
+    const v = form.querySelector('input[name="modalidad"]:checked')?.value || "Presencial";
+    $("[data-rf-mode]").textContent = v;
+    const el = $("[data-rf-price]");
+    el.textContent = money(v === "Virtual" ? cfg.precios.virtual : cfg.precios.presencial);
+    el.classList.remove("is-pop"); void el.offsetWidth; el.classList.add("is-pop");
+  }
+  $$('input[name="modalidad"]', form).forEach((r) => r.addEventListener("change", updateTotal));
+  $$("[data-open-form]").forEach((b) => b.addEventListener("click", () => { openModal(b.dataset.openForm); updateTotal(); }));
   $$("[data-close]", modal).forEach((b) => b.addEventListener("click", closeModal));
   addEventListener("keydown", (e) => e.key === "Escape" && modal.classList.contains("is-open") && closeModal());
 
@@ -458,7 +466,13 @@
       const bad = inp.type === "checkbox" ? !inp.checked : !inp.value.trim() || (inp.type === "email" && !/^\S+@\S+\.\S+$/.test(inp.value));
       if (bad) { ok = false; inp.closest(".field")?.classList.add("is-invalid"); }
     });
-    if (!ok) { err.textContent = "Revisa los campos obligatorios y acepta el tratamiento de datos."; return; }
+    if (!ok) {
+      err.textContent = "Completa los campos marcados y acepta el tratamiento de datos.";
+      const first = form.querySelector(".is-invalid input, .is-invalid select") || form.querySelector('[name="consentimiento"]:not(:checked)');
+      first?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => first?.focus({ preventScroll: true }), 350);
+      return;
+    }
 
     const data = Object.fromEntries(new FormData(form).entries());
     data.consentimiento = "Sí";
@@ -472,11 +486,12 @@
     $(".btn__label", btn).textContent = "Apartando tu cupo…";
     await post({ action: "registro", ...data });
     btn.classList.remove("is-loading");
-    $(".btn__label", btn).textContent = "Continuar al pago";
+    $(".btn__label", btn).textContent = "Confirmar inscripción";
 
     reg = { data, ts: Date.now(), status: "pendiente" };
     saveReg();
     form.reset();
+    updateTotal();
     showStep("pay");
     if (cfg.registro?.abrirWhatsappAlEnviar) window.open(waLink(regMessage()), "_blank", "noopener");
   });

@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261014" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261014b" />
 </head>
 <body>
 
@@ -859,32 +859,47 @@
 
       <!-- Paso 1: datos -->
       <form id="regForm" class="mstep" data-step="form" novalidate>
-        <h2 id="modal-title">Reserva tu cupo</h2>
-        <p class="modal__sub">Completa tus datos. Luego verás cómo pagar con llave Bre-B.</p>
+        <div class="rf-head">
+          <span class="rf-badge"><i></i>Cupos limitados · <span data-countdown="compact">—</span></span>
+          <h2 id="modal-title">Reserva tu cupo</h2>
+          <p class="modal__sub">Solo 1 minuto. Después verás cómo pagar con llave Bre-B desde cualquier banco.</p>
+        </div>
         <fieldset class="mode-pick">
-          <legend>Modalidad</legend>
-          <label class="mode"><input type="radio" name="modalidad" value="Presencial" checked /><span><b>Presencial</b><small>Cúcuta</small><em data-price="presencial">$180.000</em></span></label>
-          <label class="mode"><input type="radio" name="modalidad" value="Virtual" /><span><b>Virtual</b><small>En vivo</small><em data-price="virtual">$120.000</em></span></label>
+          <legend>1 · Elige tu modalidad</legend>
+          <label class="mode"><input type="radio" name="modalidad" value="Presencial" checked /><span><i class="mode__ic"><svg><use href="#i-pin"/></svg></i><b>Presencial</b><small>Cúcuta · cupos limitados</small><em data-price="presencial">$180.000</em></span></label>
+          <label class="mode"><input type="radio" name="modalidad" value="Virtual" /><span><i class="mode__ic"><svg><use href="#i-live"/></svg></i><b>Virtual</b><small>En vivo · desde cualquier lugar</small><em data-price="virtual">$120.000</em></span></label>
         </fieldset>
+        <p class="rf-legend">2 · Tus datos</p>
         <div class="grid2">
-          <label class="field"><span>Nombre completo *</span><input name="nombre" required autocomplete="name" placeholder="Como aparecerá en el certificado" /></label>
+          <label class="field"><span>Nombre completo *</span><input name="nombre" required autocomplete="name" placeholder="Como saldrá en tu certificado" /></label>
           <label class="field"><span>Documento de identidad *</span><input name="documento" required inputmode="numeric" placeholder="C.C." /></label>
           <label class="field"><span>WhatsApp *</span><input name="whatsapp" required type="tel" autocomplete="tel" placeholder="300 000 0000" /></label>
           <label class="field"><span>Correo electrónico *</span><input name="email" required type="email" autocomplete="email" placeholder="tu@correo.com" /></label>
-          <label class="field"><span>Perfil profesional *</span>
+          <label class="field field--full"><span>Perfil profesional *</span>
             <select name="perfil" required>
-              <option value="">Selecciona…</option>
+              <option value="">Selecciona tu perfil…</option>
               <option>Médico general</option><option>Médico especialista</option><option>Bacteriólogo / Laboratorio clínico</option><option>Auditor médico / Auditoría en salud</option><option>Odontólogo</option><option>Enfermería</option><option>Fisioterapia / Terapias</option><option>Nutrición</option><option>Psicología</option><option>Gerente / Administrativo IPS</option><option>Estudiante del área de la salud</option><option>Otro</option>
             </select>
           </label>
-          <label class="field"><span>Ciudad</span><input name="ciudad" placeholder="Cúcuta" /></label>
-          <label class="field field--full"><span>Institución o consultorio</span><input name="institucion" placeholder="Opcional" /></label>
-          <label class="field field--full"><span>¿Qué te gustaría automatizar?</span><textarea name="objetivo" rows="2" placeholder="Ej.: entrega de resultados, notas de consulta, respuesta a glosas…"></textarea></label>
         </div>
-        <label class="consent"><input type="checkbox" name="consentimiento" required /><span>Autorizo a BioMarketing el tratamiento de mis datos personales para gestionar mi inscripción y enviarme información del curso, conforme a la Ley 1581 de 2012.</span></label>
-        <p class="form-error" role="alert"></p>
-        <button class="btn btn--glow btn--block btn--lg" type="submit"><span class="btn__label">Continuar al pago</span><svg><use href="#i-arrow"/></svg></button>
-        <p class="form-safe"><svg><use href="#i-lock"/></svg>Tus datos están protegidos y no se comparten con terceros.</p>
+        <details class="rf-more">
+          <summary>+ Agregar ciudad, institución y qué quieres automatizar <small>(opcional)</small></summary>
+          <div class="grid2">
+            <label class="field"><span>Ciudad</span><input name="ciudad" placeholder="Cúcuta" /></label>
+            <label class="field"><span>Institución o consultorio</span><input name="institucion" placeholder="Opcional" /></label>
+            <label class="field field--full"><span>¿Qué te gustaría automatizar?</span><textarea name="objetivo" rows="2" placeholder="Ej.: entrega de resultados, notas de consulta, respuesta a glosas…"></textarea></label>
+          </div>
+        </details>
+        <label class="consent"><input type="checkbox" name="consentimiento" required /><span>Autorizo a BioMarketing el tratamiento de mis datos para gestionar mi inscripción, conforme a la Ley 1581 de 2012.</span></label>
+
+        <div class="rf-foot">
+          <p class="form-error" role="alert"></p>
+          <div class="rf-foot__row">
+            <div class="rf-total"><small>Total · <span data-rf-mode>Presencial</span></small><b data-rf-price>$180.000</b></div>
+            <button class="btn btn--glow btn--lg rf-submit" type="submit"><span class="btn__label">Confirmar inscripción</span><svg><use href="#i-arrow"/></svg></button>
+          </div>
+          <p class="form-safe"><svg><use href="#i-lock"/></svg>Datos protegidos · Pago seguro con llave Bre-B · Certificado incluido</p>
+        </div>
       </form>
 
       <!-- Paso 2: pago -->
@@ -952,8 +967,8 @@
 <div class="copy-toast" data-copy-toast>Copiado ✓</div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261014"></script>
-<script src="assets/js/main.js?v=20261014"></script>
-<script src="assets/js/live.js?v=20261014"></script>
+<script src="assets/js/store.js?v=20261014b"></script>
+<script src="assets/js/main.js?v=20261014b"></script>
+<script src="assets/js/live.js?v=20261014b"></script>
 </body>
 </html>
