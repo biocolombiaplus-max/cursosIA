@@ -29,7 +29,8 @@ const NOMBRE_REMITENTE = 'BioMarketing · Curso IA para el Sector Salud';
 const CARPETA_SOPORTES = 'Soportes de pago · Curso IA Salud';
 const HOJA = 'Inscritos';
 const COLUMNAS = ['fecha', 'modalidad', 'valor', 'nombre', 'documento', 'whatsapp', 'email', 'perfil', 'ciudad',
-  'institucion', 'objetivo', 'consentimiento', 'estado_pago', 'soporte', 'asistio', 'certificado', 'origen'];
+  'institucion', 'objetivo', 'consentimiento', 'estado_pago', 'soporte', 'asistio', 'certificado', 'origen',
+  'plan', 'personas', 'grupo', 'saldo', 'total'];
 
 function hoja_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();

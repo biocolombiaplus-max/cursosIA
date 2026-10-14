@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/admin.css?v=20261014" />
+  <link rel="stylesheet" href="assets/css/admin.css?v=20261014f" />
 </head>
 <body>
 
@@ -146,8 +146,12 @@
         <label>Plataforma virtual<input data-k="evento.plataformaVirtual" /></label>
         <label>Cupos presenciales<input type="number" data-k="evento.cuposPresencial" data-type="number" /></label>
         <span></span>
-        <label>Precio presencial (COP)<input type="number" data-k="precios.presencial" data-type="number" /></label>
+        <label>Precio presencial · pago completo (COP)<input type="number" data-k="precios.presencial" data-type="number" /></label>
         <label>Precio virtual (COP)<input type="number" data-k="precios.virtual" data-type="number" /></label>
+        <label>Presencial · reserva hoy (COP)<input type="number" data-k="precios.presencialReserva" data-type="number" /></label>
+        <label>Presencial · saldo el día del curso (COP)<input type="number" data-k="precios.presencialSaldo" data-type="number" /></label>
+        <label>Descuento por grupo (%)<input type="number" data-k="precios.descuentoGrupo" data-type="number" /></label>
+        <label>Mínimo de personas para grupo<input type="number" data-k="precios.grupoMinimo" data-type="number" /></label>
         <label class="full">Qué incluye presencial (una línea por ítem)<textarea rows="6" data-k="precios.presencialIncluye"></textarea></label>
         <label class="full">Qué incluye virtual (una línea por ítem)<textarea rows="5" data-k="precios.virtualIncluye"></textarea></label>
       </div>
@@ -261,8 +265,8 @@
 </div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261014"></script>
-<script src="assets/js/diploma.js?v=20261014"></script>
-<script src="assets/js/admin.js?v=20261014"></script>
+<script src="assets/js/store.js?v=20261014f"></script>
+<script src="assets/js/diploma.js?v=20261014f"></script>
+<script src="assets/js/admin.js?v=20261014f"></script>
 </body>
 </html>

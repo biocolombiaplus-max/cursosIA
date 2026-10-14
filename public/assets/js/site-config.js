@@ -16,9 +16,13 @@ window.SITE_CONFIG = {
     "cuposPresencial": 40
   },
   "precios": {
-    "presencial": 180000,
+    "presencial": 220000,
+    "presencialReserva": 120000,
+    "presencialSaldo": 120000,
     "virtual": 120000,
-    "presencialIncluye": "Taller presencial en Cúcuta, 4 horas intensivas\nAcompañamiento en sala para construir tus automatizaciones\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia firmado\nNetworking con profesionales de la salud de la región\nGrupo privado de soporte post-curso",
+    "descuentoGrupo": 10,
+    "grupoMinimo": 3,
+    "presencialIncluye": "Taller presencial en Cúcuta, 4 horas intensivas\nPago completo o reserva en dos pagos\nAcompañamiento en sala para construir tus automatizaciones\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia firmado\nNetworking con profesionales de la salud de la región\nGrupo privado de soporte post-curso",
     "virtualIncluye": "Transmisión en vivo el mismo día y horario\nPreguntas en tiempo real por chat\nKit de 30+ automatizaciones y plantillas de prompts por especialidad\nCertificado de asistencia digital firmado\nGrupo privado de soporte post-curso"
   },
   "contacto": {
@@ -122,5 +126,5 @@ window.SITE_CONFIG = {
   "admin": {
     "passwordHash": "0fe60a381e992632bfcb5d5a0e40f3b306d319ab2dd98e751a75fa584b03eda1"
   },
-  "_publicado": 1791942975727
+  "_publicado": 1791946010437
 };

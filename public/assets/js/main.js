@@ -438,6 +438,7 @@
       if (mode) {
         const r = form.querySelector(`input[name="modalidad"][value="${mode === "virtual" ? "Virtual" : "Presencial"}"]`);
         if (r) r.checked = true;
+        form.querySelector('[name="grupo"]').checked = mode === "grupo";
       }
       setTimeout(() => form.querySelector('[name="nombre"]').focus(), 350);
     }
@@ -451,14 +452,49 @@
     document.body.style.overflow = "";
     lastFocus && lastFocus.focus && lastFocus.focus();
   }
-  function updateTotal() {
-    const v = form.querySelector('input[name="modalidad"]:checked')?.value || "Presencial";
-    $("[data-rf-mode]").textContent = v;
-    const el = $("[data-rf-price]");
-    el.textContent = money(v === "Virtual" ? cfg.precios.virtual : cfg.precios.presencial);
-    el.classList.remove("is-pop"); void el.offsetWidth; el.classList.add("is-pop");
+  const P = cfg.precios || {};
+  const roundCOP = (n) => Math.round(n / 100) * 100;
+  const descPct = Number(P.descuentoGrupo || 0);
+  const grupoMin = Number(P.grupoMinimo || 3);
+  function cotizar() {
+    const modalidad = form.querySelector('input[name="modalidad"]:checked')?.value || "Presencial";
+    const presencial = modalidad === "Presencial";
+    const plan = presencial ? form.querySelector('input[name="plan"]:checked')?.value || "completo" : "completo";
+    const grupo = form.querySelector('[name="grupo"]').checked;
+    const personas = grupo ? Math.max(grupoMin, parseInt(form.querySelector('[name="personas"]').value, 10) || grupoMin) : 1;
+    const f = grupo ? 1 - descPct / 100 : 1;
+    let hoyBase, saldoBase;
+    if (!presencial) { hoyBase = P.virtual; saldoBase = 0; }
+    else if (plan === "reserva") { hoyBase = P.presencialReserva; saldoBase = P.presencialSaldo; }
+    else { hoyBase = P.presencial; saldoBase = 0; }
+    const hoyUnit = roundCOP(hoyBase * f), saldoUnit = roundCOP(saldoBase * f);
+    return { modalidad, plan, grupo, personas, hoyUnit, saldoUnit, hoy: hoyUnit * personas, saldo: saldoUnit * personas,
+      total: (hoyUnit + saldoUnit) * personas, ahorroGrupo: grupo ? (hoyBase + saldoBase) * personas - (hoyUnit + saldoUnit) * personas : 0 };
   }
-  $$('input[name="modalidad"]', form).forEach((r) => r.addEventListener("change", updateTotal));
+  function updateTotal() {
+    const c = cotizar();
+    $("[data-plan-pick]").hidden = c.modalidad !== "Presencial";
+    form.querySelector(".group-fields").hidden = !c.grupo;
+    form.querySelector(".group-box").classList.toggle("is-on", c.grupo);
+    $("[data-rf-label]").textContent = `Pagas hoy · ${c.modalidad}${c.grupo ? " · grupo" : ""}`;
+    const el = $("[data-rf-price]");
+    el.textContent = money(c.hoy);
+    el.classList.remove("is-pop"); void el.offsetWidth; el.classList.add("is-pop");
+    const det = [];
+    if (c.grupo) det.push(`${c.personas} × ${money(c.hoyUnit)} · −${descPct}%`);
+    if (c.saldo) det.push(`+ ${money(c.saldo)} el día del curso`);
+    $("[data-rf-detail]").textContent = det.join(" · ");
+  }
+  $$('input[name="modalidad"], input[name="plan"], [name="grupo"], [name="personas"]', form).forEach((r) => {
+    r.addEventListener("change", updateTotal);
+    r.addEventListener("input", updateTotal);
+  });
+  // Textos de ahorro y grupo en toda la página
+  $$("[data-save]").forEach((el) => (el.textContent = money((P.presencialReserva || 0) + (P.presencialSaldo || 0) - (P.presencial || 0))));
+  $$("[data-grupo-desc]").forEach((el) => (el.textContent = descPct));
+  $$("[data-grupo-min]").forEach((el) => (el.textContent = grupoMin));
+  form.querySelector('[name="personas"]').min = grupoMin;
+  form.querySelector('[name="personas"]').value = grupoMin;
   $$("[data-open-form]").forEach((b) => b.addEventListener("click", () => { openModal(b.dataset.openForm); updateTotal(); }));
   $$("[data-close]", modal).forEach((b) => b.addEventListener("click", closeModal));
   addEventListener("keydown", (e) => e.key === "Escape" && modal.classList.contains("is-open") && closeModal());
@@ -484,8 +520,24 @@
 
     const data = Object.fromEntries(new FormData(form).entries());
     data.consentimiento = "Sí";
-    data.valorNum = data.modalidad === "Virtual" ? cfg.precios.virtual : cfg.precios.presencial;
-    data.valor = money(data.valorNum);
+    const c = cotizar();
+    if (c.grupo && !String(data.institucionGrupo || "").trim()) {
+      const f = form.querySelector('[name="institucionGrupo"]').closest(".field");
+      f.classList.add("is-invalid");
+      err.textContent = "Escribe el nombre de la institución del grupo.";
+      f.scrollIntoView({ behavior: "smooth", block: "center" });
+      return;
+    }
+    if (c.grupo) data.institucion = data.institucionGrupo;
+    delete data.institucionGrupo;
+    data.plan = c.modalidad === "Presencial" ? (c.plan === "reserva" ? "Reserva + saldo el día del curso" : "Pago completo") : "Pago completo";
+    data.personas = c.personas;
+    data.grupo = c.grupo ? `Sí (−${descPct}%)` : "No";
+    data.valorNum = c.hoy;
+    data.valor = money(c.hoy);
+    data.saldoNum = c.saldo;
+    data.saldo = c.saldo ? money(c.saldo) : "";
+    data.total = money(c.total);
     data.fecha = new Date().toLocaleString("es-CO");
     data.origen = location.href.split("#")[0];
 
@@ -508,7 +560,9 @@
     const d = reg.data;
     return (
       `Hola BioMarketing 👋 Me inscribí al curso *IA para el Sector Salud con Claude*.\n\n` +
-      `• Nombre: ${d.nombre}\n• Documento: ${d.documento}\n• Modalidad: ${d.modalidad} (${d.valor})\n` +
+      `• Nombre: ${d.nombre}\n• Documento: ${d.documento}\n• Modalidad: ${d.modalidad}\n` +
+      `• Forma de pago: ${d.plan || "Pago completo"}\n• Pago hoy: ${d.valor}${d.saldo ? `\n• Saldo el día del curso: ${d.saldo}` : ""}\n` +
+      (d.grupo && d.grupo !== "No" ? `• Grupo: ${d.personas} personas · ${d.grupo} · Total ${d.total}\n` : "") +
       `• Perfil: ${d.perfil}\n• Correo: ${d.email}\n• WhatsApp: ${d.whatsapp}\n` +
       (d.ciudad ? `• Ciudad: ${d.ciudad}\n` : "") +
       (d.institucion ? `• Institución: ${d.institucion}\n` : "") +
@@ -525,7 +579,13 @@
     $$("[data-p-llave], [data-p-llave2]").forEach((el) => (el.textContent = pago.llave || "@OTO262"));
     $$("[data-p-titular], [data-p-titular2]").forEach((el) => (el.textContent = pago.titular || ""));
     $("[data-p-amount]").textContent = d.valor;
-    $("[data-p-mode]").textContent = d.modalidad;
+    $("[data-p-mode]").textContent = d.modalidad + (d.grupo && d.grupo !== "No" ? ` · ${d.personas} pers.` : "");
+    const note = $("[data-p-note]");
+    const partes = [];
+    if (d.saldo) partes.push(`Este pago reserva tu cupo. El saldo de <b>${d.saldo}</b> se paga el día del curso.`);
+    if (d.grupo && d.grupo !== "No") partes.push(`Incluye el <b>descuento de grupo</b> para ${d.personas} personas. Total del grupo: <b>${d.total}</b>.`);
+    note.innerHTML = partes.join("<br>");
+    note.hidden = !partes.length;
     $("[data-p-wa]").href = waLink(regMessage(`\n✅ Ya realicé el pago por llave Bre-B ${pago.llave}. Adjunto el comprobante.`));
     payTimer();
   }
