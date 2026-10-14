@@ -484,6 +484,16 @@
     if (c.grupo) det.push(`${c.personas} × ${money(c.hoyUnit)} · −${descPct}%`);
     if (c.saldo) det.push(`+ ${money(c.saldo)} el día del curso`);
     $("[data-rf-detail]").textContent = det.join(" · ");
+    const planTxt = c.modalidad === "Virtual" ? "Pago único" : c.plan === "reserva" ? "Pago en 2 partes" : "Pago completo";
+    const filas = [
+      [`${c.modalidad} · ${planTxt}${c.grupo ? ` · ${c.personas} personas` : ""}`, ""],
+      ["Pagas hoy", money(c.hoy), "hoy"],
+      ...(c.saldo ? [["El día del curso", money(c.saldo)]] : []),
+      ...(c.grupo ? [[`Descuento grupo (−${descPct}%)`, "−" + money(c.ahorroGrupo), "save"]] : []),
+      ...(c.saldo || c.grupo ? [["Total", money(c.total), "total"]] : [])
+    ];
+    $("[data-rf-summary]").innerHTML = '<span class="rf-summary__t">Resumen de tu inscripción</span>' +
+      filas.map(([k, v, cls]) => `<div class="rf-summary__r${cls ? " is-" + cls : ""}"><span>${k}</span><b>${v}</b></div>`).join("");
   }
   $$('input[name="modalidad"], input[name="plan"], [name="grupo"], [name="personas"]', form).forEach((r) => {
     r.addEventListener("change", updateTotal);

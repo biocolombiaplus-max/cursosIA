@@ -99,10 +99,15 @@
 
   let actual = "hero", ultimo = Date.now(), cerrado = false, timer;
   const vistos = new Set();
+  const movil = matchMedia("(max-width: 640px)");
+  const sticky = $("[data-wa-sticky]");
+  if (sticky) sticky.addEventListener("click", () => (sticky.href = link(CTX[actual][2]())));
   function setCtx(key) {
     if (!CTX[key] || !CTX[key][0]) return;
     actual = key;
     fab.href = link(CTX[key][2]());
+    if (sticky) sticky.href = fab.href;
+    if (movil.matches) return; // en el celular WhatsApp vive en la barra inferior, sin burbujas
     if (cerrado || vistos.has(key) || Date.now() - ultimo < 18000 || document.body.style.overflow === "hidden") return;
     vistos.add(key);
     ultimo = Date.now();
@@ -119,7 +124,7 @@
 
   const io = new IntersectionObserver((entries) => {
     entries.forEach((e) => e.isIntersecting && setCtx(keyOf(e.target)));
-  }, { threshold: 0.45 });
+  }, { rootMargin: "-45% 0px -45% 0px", threshold: 0 });
   $$("section").forEach((s) => keyOf(s) && CTX[keyOf(s)] && io.observe(s));
   // Primera burbuja después de unos segundos en la portada
   setTimeout(() => { ultimo = 0; vistos.delete("hero"); if (actual === "hero") setCtx("hero"); }, 9000);

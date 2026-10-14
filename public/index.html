@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261014g" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261014h" />
 </head>
 <body>
 
@@ -848,8 +848,9 @@
 <!-- Botones flotantes -->
 <a class="fab-wa" data-wa href="#" aria-label="Escríbenos por WhatsApp"><svg><use href="#i-wa"/></svg></a>
 <div class="sticky-cta">
-  <div><small>Desde</small><b data-price="virtual">$120.000</b></div>
-  <button class="btn btn--glow btn--sm" data-open-form>Inscribirme</button>
+  <a class="sticky-wa" data-wa-sticky href="#" target="_blank" rel="noopener" aria-label="Escríbenos por WhatsApp"><svg><use href="#i-wa"/></svg><i></i></a>
+  <div class="sticky-cta__price"><small>Cupo desde</small><b data-price="virtual">$120.000</b></div>
+  <button class="btn btn--glow btn--sm" data-open-form>Inscribirme <svg><use href="#i-arrow"/></svg></button>
 </div>
 
 
@@ -890,8 +891,8 @@
         </fieldset>
         <fieldset class="plan-pick" data-plan-pick>
           <legend>Forma de pago · presencial</legend>
-          <label class="pp"><input type="radio" name="plan" value="completo" checked /><span><b>Pago completo</b><small><i class="pp__save">Ahorras <span data-save>$20.000</span></i></small><em data-price="presencial">$220.000</em></span></label>
-          <label class="pp"><input type="radio" name="plan" value="reserva" /><span><b>Reserva hoy, paga el resto el día</b><small>Hoy <span data-price="presencialReserva">$120.000</span> + <span data-price="presencialSaldo">$120.000</span> el día del curso</small><em data-price="presencialReserva">$120.000</em></span></label>
+          <label class="pp"><input type="radio" name="plan" value="completo" checked /><span><b>Pago completo</b><small>Un solo pago hoy · <i class="pp__save">Ahorras <span data-save>$20.000</span></i></small><em data-price="presencial">$220.000</em></span></label>
+          <label class="pp"><input type="radio" name="plan" value="reserva" /><span><b>Pago en 2 partes</b><small><span data-price="presencialReserva">$120.000</span> hoy + <span data-price="presencialSaldo">$120.000</span> el día del curso</small><em data-price="presencialReserva">$120.000</em></span></label>
         </fieldset>
         <div class="group-box">
           <label class="group-toggle"><input type="checkbox" name="grupo" /><span class="gt-switch"></span><span class="gt-txt"><b>Vamos en grupo desde la misma institución</b><small><span data-grupo-min>3</span> o más personas · <span data-grupo-desc>10</span>% de descuento para cada una</small></span><i class="gt-badge">−<span data-grupo-desc>10</span>%</i></label>
@@ -924,6 +925,7 @@
             <label class="field field--full"><span>¿Qué te gustaría automatizar?</span><textarea name="objetivo" rows="2" placeholder="Ej.: entrega de resultados, notas de consulta, respuesta a glosas…"></textarea></label>
           </div>
         </details>
+        <div class="rf-summary" data-rf-summary></div>
         <label class="consent"><input type="checkbox" name="consentimiento" required /><span>Autorizo a BioMarketing el tratamiento de mis datos para gestionar mi inscripción, conforme a la Ley 1581 de 2012.</span></label>
 
         <div class="rf-foot">
@@ -1002,9 +1004,9 @@
 <div class="copy-toast" data-copy-toast>Copiado ✓</div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261014g"></script>
-<script src="assets/js/main.js?v=20261014g"></script>
-<script src="assets/js/live.js?v=20261014g"></script>
-<script src="assets/js/whatsapp.js?v=20261014g"></script>
+<script src="assets/js/store.js?v=20261014h"></script>
+<script src="assets/js/main.js?v=20261014h"></script>
+<script src="assets/js/live.js?v=20261014h"></script>
+<script src="assets/js/whatsapp.js?v=20261014h"></script>
 </body>
 </html>
