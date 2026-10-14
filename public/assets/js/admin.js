@@ -399,10 +399,19 @@
     if (!gh.token) return ghStatus(false, "GitHub no conectado");
     try {
       await ghApi("GET", `/branches/${encodeURIComponent(gh.branch)}`);
-      ghStatus(true, `Conectado a ${gh.owner}/${gh.repo}`);
-      return true;
     } catch (e) {
       ghStatus(false, ghError(e));
+      return false;
+    }
+    // Prueba real de escritura: crea un "blob" suelto que no modifica ningún archivo ni la página.
+    try {
+      await ghApi("POST", "/git/blobs", { content: "prueba de permisos del panel", encoding: "utf-8" });
+      ghStatus(true, `Conectado a ${gh.owner}/${gh.repo} · puede publicar ✓`);
+      return true;
+    } catch (e) {
+      ghStatus(false, e.status === 403 || e.status === 404
+        ? "Clave de SOLO LECTURA: en GitHub edita el token → Repositories → Contents → Read and write"
+        : ghError(e));
       return false;
     }
   }
@@ -412,7 +421,7 @@
     gh.token = t;
     await saveGh();
     if (await ghCheck()) toast("GitHub conectado ✓ Ya puedes publicar con un clic", "ok");
-    else toast("No se pudo conectar. Revisa la clave y los permisos.", "err");
+    else toast($("#ghStatus b").textContent, "err");
   });
   $("#ghForget").addEventListener("click", async () => {
     gh.token = "";
@@ -480,6 +489,10 @@
       $$(".side__nav button").find((b) => b.dataset.view === "publicar").click();
       $("#ghToken").focus();
       return toast("Conecta GitHub una sola vez para publicar con un clic", "err");
+    }
+    if (!(await ghCheck())) {
+      $$(".side__nav button").find((b) => b.dataset.view === "publicar").click();
+      return toast($("#ghStatus b").textContent, "err");
     }
     if (!confirm("¿Publicar los cambios en la página para todos los visitantes?")) return;
     btn.classList.add("is-loading");
