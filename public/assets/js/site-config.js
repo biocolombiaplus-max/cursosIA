@@ -1,6 +1,6 @@
 /*
  * Configuración publicada de la landing (generada por el panel administrativo).
- * 13/10/2026, 8:47:35 p. m.
+ * 13/10/2026, 8:56:15 p. m.
  */
 window.SITE_CONFIG = {
   "evento": {
@@ -57,7 +57,14 @@ window.SITE_CONFIG = {
     "firmaImg": "",
     "codigoPrefijo": "BM-IA-2026"
   },
-  "testimonios": [],
+  "testimonios": [
+    {
+      "nombre": "Felipe Pinillos",
+      "cargo": "Administrador de IPS",
+      "texto": "Aprendí a mejorar todos los procesos de la IPS con automatizaciones muy fácil de aplicar y muy útiles, muy recomendado",
+      "foto": ""
+    }
+  ],
   "galeria": [],
   "secciones": {
     "hero": {
@@ -115,5 +122,5 @@ window.SITE_CONFIG = {
   "admin": {
     "passwordHash": "0fe60a381e992632bfcb5d5a0e40f3b306d319ab2dd98e751a75fa584b03eda1"
   },
-  "_publicado": 1791942455569
+  "_publicado": 1791942975727
 };
