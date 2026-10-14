@@ -389,7 +389,7 @@
   }
   function ghError(e) {
     if (e.status === 401) return "La clave de GitHub no es válida o venció. Crea una nueva en Publicar.";
-    if (e.status === 403) return "La clave de GitHub no tiene permiso de escritura (Contents: Read and write).";
+    if (e.status === 403) return `GitHub no permitió guardar: la clave necesita Contents → "Read and write" en el repositorio ${gh.repo} (GitHub dice: ${e.message}).`;
     if (e.status === 404) return "No se encontró el repositorio o la rama. Revisa Publicar → Avanzado.";
     if (e.status === 413 || /too large/i.test(e.message)) return "La configuración es demasiado pesada. Usa fotos más livianas.";
     return "No se pudo publicar: " + e.message;
