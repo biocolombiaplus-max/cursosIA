@@ -503,7 +503,7 @@ svg { width: 1.2em; height: 1.2em; flex: none; }
 .footer__col { display: flex; flex-direction: column; gap: 10px; }
 .footer__col h4 { color: #fff; margin: 0 0 6px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.14em; }
 .footer__col a:hover { color: var(--amber); }
-.footer__legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line-dark); margin-top: 50px; padding-top: 24px; font-size: 0.82rem; color: rgba(236,232,255,.45); }
+.footer__legal { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; border-top: 1px solid var(--line-dark); margin-top: 50px; padding-top: 24px; font-size: 0.82rem; align-items: center; color: rgba(236,232,255,.45); }
 
 /* ---------- Flotantes ---------- */
 .fab-wa { position: fixed; right: 20px; bottom: 22px; z-index: 70; width: 60px; height: 60px; border-radius: 50%; background: #25d366; color: #25d366; display: grid; place-items: center; box-shadow: 0 14px 30px -8px rgba(37,211,102,.7); transition: transform 0.3s; }
@@ -1214,3 +1214,10 @@ svg { width: 1.2em; height: 1.2em; flex: none; }
   .phone { width: 280px; height: 540px; }
   .mail { width: 100%; max-width: 320px; }
 }
+
+/* Acceso discreto al panel administrativo */
+.footer__login { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; border: 1px solid rgba(255,255,255,.1); color: rgba(236,232,255,.45); font-size: .78rem; transition: color .25s, border-color .25s, background .25s; }
+.footer__login svg { width: 13px; height: 13px; }
+.footer__login:hover { color: #fff; border-color: rgba(255,176,32,.5); background: rgba(255,255,255,.04); }
+/* La tarjeta "Datos protegidos" no debe tapar el texto del hero */
+.float-card--b { left: -4%; }
