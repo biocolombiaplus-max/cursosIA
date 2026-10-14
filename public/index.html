@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261014h" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261014i" />
 </head>
 <body>
 
@@ -877,6 +877,20 @@
     </aside>
     <div class="modal__main">
 
+      <!-- Inscripciones de este dispositivo -->
+      <div class="mstep hub" data-step="hub" hidden>
+        <span class="rf-badge"><i></i>Cupos limitados · <span data-countdown="compact">—</span></span>
+        <h2>Tus inscripciones</h2>
+        <p class="modal__sub">Hechas desde este dispositivo. Toca una para ver su pago o confirmación.</p>
+        <div class="hub-list" data-hub-list></div>
+        <button type="button" class="hub-new" data-new-reg>
+          <span class="hub-new__ic">+</span>
+          <span><b>Inscribir a otra persona</b><small>Colega, familiar o integrante de tu equipo</small></span>
+          <svg><use href="#i-arrow"/></svg>
+        </button>
+        <p class="hub-tip"><svg><use href="#i-users"/></svg><span>¿Son 3 o más de la misma institución? Inscríbanse como grupo y cada uno recibe <b><span data-grupo-desc>10</span>% de descuento</b>.</span></p>
+      </div>
+
       <!-- Paso 1: datos -->
       <form id="regForm" class="mstep" data-step="form" novalidate>
         <div class="rf-head">
@@ -977,7 +991,7 @@
         <p class="form-error" data-p-error role="alert"></p>
         <button class="btn btn--glow btn--block btn--lg" data-p-send><span class="btn__label">Enviar soporte y confirmar mi cupo</span><svg><use href="#i-arrow"/></svg></button>
         <a class="pay__alt" data-p-wa href="#" target="_blank" rel="noopener"><svg><use href="#i-wa"/></svg>Prefiero enviar el soporte por WhatsApp</a>
-        <button class="pay__reset" data-p-reset type="button">¿No eres tú? Hacer otra inscripción</button>
+        <button class="pay__reset" data-p-reset type="button">+ Inscribir a otra persona</button>
       </div>
 
       <!-- Paso 3: confirmación -->
@@ -994,6 +1008,7 @@
         <div class="done__actions">
           <a class="btn btn--glow btn--alt btn--block" data-d-cal href="#" target="_blank" rel="noopener"><svg><use href="#i-gcal"/></svg>Agregar a mi Google Calendar</a>
           <a class="btn btn--wa btn--block" data-d-wa href="#" target="_blank" rel="noopener"><svg><use href="#i-wa"/></svg><span data-d-wa-label>Escribir a BioMarketing</span></a>
+          <button type="button" class="btn btn--ghost-dark btn--block" data-new-reg><svg><use href="#i-users"/></svg>Inscribir a otra persona</button>
         </div>
       </div>
 
@@ -1004,9 +1019,9 @@
 <div class="copy-toast" data-copy-toast>Copiado ✓</div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261014h"></script>
-<script src="assets/js/main.js?v=20261014h"></script>
-<script src="assets/js/live.js?v=20261014h"></script>
-<script src="assets/js/whatsapp.js?v=20261014h"></script>
+<script src="assets/js/store.js?v=20261014i"></script>
+<script src="assets/js/main.js?v=20261014i"></script>
+<script src="assets/js/live.js?v=20261014i"></script>
+<script src="assets/js/whatsapp.js?v=20261014i"></script>
 </body>
 </html>

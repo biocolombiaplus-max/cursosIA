@@ -402,10 +402,25 @@
   const REG_KEY = "bm-reg";
   const endpoint = cfg.registro?.endpoint || "";
   let lastFocus = null;
-  let reg = null;
+  const REGS_KEY = "bm-regs";
+  let reg = null;      // inscripción que se está viendo
+  let regs = [];       // todas las inscripciones hechas desde este dispositivo
   let payFile = null;
-  try { reg = JSON.parse(localStorage.getItem(REG_KEY) || "null"); } catch (e) {}
-  const saveReg = () => { try { localStorage.setItem(REG_KEY, JSON.stringify(reg)); } catch (e) {} };
+  let lastMode = null;
+  try { regs = JSON.parse(localStorage.getItem(REGS_KEY) || "[]"); } catch (e) {}
+  try {
+    // Compatibilidad: inscripción única guardada por la versión anterior
+    const old = JSON.parse(localStorage.getItem(REG_KEY) || "null");
+    if (old && !regs.length) regs.push({ id: "r" + old.ts, ...old });
+    localStorage.removeItem(REG_KEY);
+  } catch (e) {}
+  const saveReg = () => {
+    if (reg) {
+      const i = regs.findIndex((r) => r.id === reg.id);
+      if (i >= 0) regs[i] = reg; else regs.push(reg);
+    }
+    try { localStorage.setItem(REGS_KEY, JSON.stringify(regs)); } catch (e) {}
+  };
 
   async function post(payload) {
     if (!endpoint) return false;
@@ -419,7 +434,7 @@
 
   function showStep(name) {
     $$(".mstep", modal).forEach((s) => (s.hidden = s.dataset.step !== name));
-    const idx = { form: 0, pay: 1, done: 2 }[name];
+    const idx = { form: 0, pay: 1, done: 2, hub: -1 }[name];
     $$("[data-msteps] li", modal).forEach((li, i) => {
       li.classList.toggle("is-active", i === idx);
       li.classList.toggle("is-done", i < idx);
@@ -427,12 +442,46 @@
     $(".modal__main", modal).scrollTop = 0;
     if (name === "pay") fillPay();
     if (name === "done") fillDone();
+    if (name === "hub") fillHub();
   }
+
+  // Lista de inscripciones de este dispositivo
+  function fillHub() {
+    const list = $("[data-hub-list]");
+    list.innerHTML = regs.slice().reverse().map((r) => {
+      const d = r.data, ok = r.status === "soporte";
+      return `<button type="button" class="hub-item" data-hub-id="${esc(r.id)}">
+        <span class="hub-item__av">${esc((d.nombre || "?").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase())}</span>
+        <span class="hub-item__txt"><b>${esc(d.nombre)}</b><small>${esc(d.modalidad)}${d.grupo && d.grupo !== "No" ? " · grupo de " + esc(d.personas) : ""} · ${esc(d.valor)}</small></span>
+        <span class="hub-chip ${ok ? "is-ok" : ""}">${ok ? "Soporte enviado" : "Pago pendiente"}</span>
+      </button>`;
+    }).join("");
+    $$("[data-hub-id]", list).forEach((b) => b.addEventListener("click", () => {
+      reg = regs.find((r) => r.id === b.dataset.hubId);
+      showStep(reg.status === "soporte" ? "done" : "pay");
+    }));
+  }
+  function nuevaInscripcion(mode) {
+    reg = null;
+    payFile = null;
+    drop.classList.remove("has-file");
+    form.reset();
+    const m = mode || lastMode;
+    if (m) {
+      const r = form.querySelector(`input[name="modalidad"][value="${m === "virtual" ? "Virtual" : "Presencial"}"]`);
+      if (r) r.checked = true;
+      form.querySelector('[name="grupo"]').checked = m === "grupo";
+    }
+    updateTotal();
+    showStep("form");
+    setTimeout(() => form.querySelector('[name="nombre"]').focus(), 300);
+  }
+  $$("[data-new-reg]").forEach((b) => b.addEventListener("click", () => nuevaInscripcion()));
 
   function openModal(mode) {
     lastFocus = document.activeElement;
-    if (reg && reg.status === "soporte") showStep("done");
-    else if (reg) showStep("pay");
+    lastMode = mode || null;
+    if (regs.length) { reg = null; showStep("hub"); }
     else {
       showStep("form");
       if (mode) {
@@ -558,7 +607,7 @@
     btn.classList.remove("is-loading");
     $(".btn__label", btn).textContent = "Confirmar inscripción";
 
-    reg = { data, ts: Date.now(), status: "pendiente" };
+    reg = { id: "r" + Date.now(), data, ts: Date.now(), status: "pendiente" };
     saveReg();
     form.reset();
     updateTotal();
@@ -690,13 +739,7 @@
     showStep("done");
   });
 
-  $("[data-p-reset]").addEventListener("click", () => {
-    if (!confirm("¿Iniciar una nueva inscripción? Se borrará la reserva guardada en este dispositivo.")) return;
-    reg = null; payFile = null;
-    try { localStorage.removeItem(REG_KEY); } catch (e) {}
-    drop.classList.remove("has-file");
-    showStep("form");
-  });
+  $("[data-p-reset]").addEventListener("click", () => nuevaInscripcion());
 
   // Paso 3 → confirmación
   function gcalDate(iso) { return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
