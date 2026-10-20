@@ -58,16 +58,16 @@ async function api(req, env, ctx, url) {
     const regId = limpio(b.regId, 40);
     const tel = limpio(b.whatsapp, 20).replace(/\D/g, "");
     const body = {
-      test: String(test),
+      test,
       ip: req.headers.get("CF-Connecting-IP") || "127.0.0.1",
       name: titulo.slice(0, 60),
       description: `${planTxt}${c.personas > 1 ? ` · grupo ${c.personas} personas` : ""} · ${nombre}`.slice(0, 120),
       invoice: `BM-${doc}-${Date.now().toString(36).toUpperCase()}`,
       currency: "COP",
-      amount: String(c.hoy),
-      taxBase: "0",
-      tax: "0",
-      taxIco: "0",
+      amount: c.hoy,
+      taxBase: 0,
+      tax: 0,
+      taxIco: 0,
       country: "CO",
       lang: "ES",
       response: `${url.origin}/?pago=epayco&r=${encodeURIComponent(regId)}`,
@@ -78,13 +78,7 @@ async function api(req, env, ctx, url) {
       extra3: planTxt,
       extra4: String(c.personas),
       extra5: nombre,
-      billing: { email, name: nombre, address: limpio(b.ciudad, 60) || "Colombia", typeDoc: "CC", numberDoc: doc, mobilePhone: tel || "0" },
-      nameBilling: nombre,
-      emailBilling: email,
-      addressBilling: limpio(b.ciudad, 60) || "Colombia",
-      typeDocBilling: "CC",
-      numberDocBilling: doc,
-      mobilephoneBilling: tel || "0"
+      billing: { email, name: nombre, address: limpio(b.ciudad, 60) || "Colombia", typeDoc: "CC", numberDoc: doc, ...(tel ? { mobilePhone: tel } : {}) }
     };
     const r = await fetch(`${APIFY}/payment/session/create`, {
       method: "POST",
@@ -95,7 +89,9 @@ async function api(req, env, ctx, url) {
     const sessionId = d?.data?.sessionId;
     if (!sessionId) {
       const det = (d?.data?.errors || d?.errors || []).map?.((e) => e.errorMessage).filter(Boolean).join(" · ");
-      return json({ ok: false, error: "ePayco no pudo crear el pago" + (det ? `: ${det}` : ".") }, 502);
+      // El detalle técnico queda en los registros de Cloudflare (Observability), no se le muestra al cliente
+      console.log("ePayco session/create", r.status, det || JSON.stringify(d).slice(0, 800));
+      return json({ ok: false, error: "No pudimos abrir el pago con tarjeta en este momento." }, 502);
     }
     return json({ ok: true, sessionId, test, amount: c.hoy });
   }
