@@ -451,16 +451,17 @@
   function fillHub() {
     const list = $("[data-hub-list]");
     list.innerHTML = regs.slice().reverse().map((r) => {
-      const d = r.data, ok = r.status === "soporte";
+      const d = r.data, ok = r.status === "soporte" || r.status === "pagado";
+      const chip = r.status === "pagado" ? "Pago aprobado" : r.status === "proceso" ? "Pago en proceso" : ok ? "Soporte enviado" : "Pago pendiente";
       return `<button type="button" class="hub-item" data-hub-id="${esc(r.id)}">
         <span class="hub-item__av">${esc((d.nombre || "?").trim().split(/\s+/).map((w) => w[0]).slice(0, 2).join("").toUpperCase())}</span>
         <span class="hub-item__txt"><b>${esc(d.nombre)}</b><small>${esc(d.modalidad)}${d.grupo && d.grupo !== "No" ? " · grupo de " + esc(d.personas) : ""} · ${esc(d.valor)}</small></span>
-        <span class="hub-chip ${ok ? "is-ok" : ""}">${ok ? "Soporte enviado" : "Pago pendiente"}</span>
+        <span class="hub-chip ${ok ? "is-ok" : ""}">${chip}</span>
       </button>`;
     }).join("");
     $$("[data-hub-id]", list).forEach((b) => b.addEventListener("click", () => {
       reg = regs.find((r) => r.id === b.dataset.hubId);
-      showStep(reg.status === "soporte" ? "done" : "pay");
+      showStep(["soporte", "pagado", "proceso"].includes(reg.status) ? "done" : "pay");
     }));
   }
   function nuevaInscripcion(mode) {
@@ -648,6 +649,11 @@
     note.innerHTML = partes.join("<br>");
     note.hidden = !partes.length;
     $("[data-p-wa]").href = waLink(regMessage(`\n✅ Ya realicé el pago por llave Bre-B ${pago.llave}. Adjunto el comprobante.`));
+    $$("[data-e-amount], [data-e-amount2]").forEach((el) => (el.textContent = d.valor));
+    $("[data-e-mode]").textContent = $("[data-p-mode]").textContent;
+    $("[data-e-note]").textContent = d.saldo ? `Reserva tu cupo · saldo de ${d.saldo} el día del curso` : d.grupo && d.grupo !== "No" ? `Incluye descuento de grupo · ${d.personas} personas` : "";
+    $("[data-e-error]").textContent = reg.payError || "";
+    setMethod(reg.payError ? "epayco" : "breb");
     payTimer();
   }
   function payTimer() {
@@ -743,6 +749,81 @@
 
   $("[data-p-reset]").addEventListener("click", () => nuevaInscripcion());
 
+  /* ---------- Pago con ePayco (tarjeta, PSE, Nequi, Daviplata…) ---------- */
+  const methods = $("[data-pmethods]");
+  function setMethod(m) {
+    if (methods.hidden) m = "breb";
+    $$("[data-method]", methods).forEach((b) => { const on = b.dataset.method === m; b.classList.toggle("is-on", on); b.setAttribute("aria-selected", on); });
+    $$("[data-panel]", modal).forEach((p) => (p.hidden = p.dataset.panel !== m));
+  }
+  $$("[data-method]", methods).forEach((b) => b.addEventListener("click", () => setMethod(b.dataset.method)));
+  let epaycoTest = false;
+  fetch("/api/pago/config").then((r) => (r.ok ? r.json() : null)).then((d) => {
+    if (d && d.activo) { methods.hidden = false; epaycoTest = d.test; }
+  }).catch(() => {});
+
+  const loadScript = (src) => new Promise((res, rej) => {
+    if (window.ePayco) return res();
+    const sc = document.createElement("script");
+    sc.src = src; sc.onload = res; sc.onerror = rej;
+    document.head.appendChild(sc);
+  });
+  $("[data-e-pay]").addEventListener("click", async (e) => {
+    const btn = e.currentTarget, err = $("[data-e-error]"), lbl = $(".btn__label", btn), txt = lbl.innerHTML;
+    if (!reg) return;
+    err.textContent = "";
+    reg.payError = "";
+    btn.classList.add("is-loading");
+    lbl.textContent = "Preparando pago seguro…";
+    try {
+      const d = reg.data;
+      const r = await fetch("/api/pago/sesion", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ regId: reg.id, nombre: d.nombre, email: d.email, documento: d.documento, whatsapp: d.whatsapp, ciudad: d.ciudad,
+          modalidad: d.modalidad, plan: /^reserva/i.test(d.plan || "") ? "reserva" : "completo", grupo: !!d.grupo && d.grupo !== "No", personas: d.personas })
+      });
+      const s = await r.json().catch(() => ({}));
+      if (!s.ok) throw new Error(s.error || "No se pudo iniciar el pago.");
+      await loadScript("https://checkout.epayco.co/checkout-v2.js");
+      reg.via = "epayco"; saveReg();
+      const checkout = window.ePayco.checkout.configure({ sessionId: s.sessionId, type: "onpage", test: !!s.test });
+      checkout.open();
+    } catch (x) {
+      err.textContent = (x && x.message && x.message !== "Failed to fetch" ? x.message : "No pudimos abrir el pago.") + " Puedes pagar con llave Bre-B o escribirnos por WhatsApp.";
+    }
+    btn.classList.remove("is-loading");
+    lbl.innerHTML = txt;
+  });
+
+  // Regreso desde ePayco: /?pago=epayco&r=<inscripción>&ref_payco=<referencia>
+  (async function retornoEpayco() {
+    const q = new URLSearchParams(location.search);
+    const ref = q.get("ref_payco") || q.get("x_ref_payco");
+    if (!ref && q.get("pago") !== "epayco") return;
+    history.replaceState(null, "", location.pathname + "#inicio");
+    reg = regs.find((r) => r.id === q.get("r")) || null;
+    if (!ref) { if (reg) { openModal(); showStep("pay"); } return; }
+    let t = null;
+    try { t = await (await fetch("/api/pago/estado?ref=" + encodeURIComponent(ref))).json(); } catch (e) {}
+    if (!reg && t?.regId) reg = regs.find((r) => r.id === t.regId) || null;
+    if (!reg) {
+      if (!t?.ok) return;
+      reg = { id: t.regId || "r" + Date.now(), ts: Date.now(), status: "pendiente",
+        data: { nombre: t.nombre || "Hola", documento: t.documento, modalidad: /virtual/i.test(t.plan) ? "Virtual" : "Presencial", valor: money(t.valor), valorNum: t.valor, plan: t.plan, email: "", whatsapp: "", perfil: "" } };
+    }
+    reg.ref = ref; reg.via = "epayco";
+    lastFocus = document.activeElement;
+    modal.classList.add("is-open");
+    modal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
+    if (t?.ok && t.estado === "aprobado") { reg.status = "pagado"; reg.payError = ""; saveReg(); showStep("done"); }
+    else if (t?.ok && t.estado === "pendiente") { reg.status = "proceso"; saveReg(); showStep("done"); }
+    else {
+      reg.payError = t?.ok ? `Tu pago no fue aprobado (${t.respuesta || "rechazado"}). Intenta con otro medio o usa la llave Bre-B.` : "No pudimos confirmar el pago. Si se descontó el dinero, escríbenos por WhatsApp con tu referencia " + ref + ".";
+      saveReg(); showStep("pay");
+    }
+  })();
+
   // Paso 3 → confirmación
   function gcalDate(iso) { return new Date(iso).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""); }
   function fillDone() {
@@ -759,6 +840,20 @@
       `&location=${encodeURIComponent(loc || "")}`;
     const viaWa = reg.via === "whatsapp";
     const first = reg.data.nombre.split(" ")[0];
+    if (reg.via === "epayco") {
+      const ok = reg.status === "pagado";
+      $("[data-d-title]").innerHTML = ok ? `¡Pago aprobado, ${esc(first)}! 🎉` : `Tu pago está en proceso, ${esc(first)}`;
+      $("[data-d-sub]").textContent = ok
+        ? "Tu cupo quedó confirmado. Te enviamos por WhatsApp y correo todos los detalles del taller."
+        : "El banco está confirmando tu pago (PSE o efectivo puede tardar unos minutos). Te avisamos apenas se apruebe.";
+      $("[data-d-proof]").textContent = `${ok ? "Pago confirmado" : "Pago en verificación"} por ePayco · Ref. ${reg.ref || ""}`;
+      $("[data-d-wa-label]").textContent = "Escribir a BioMarketing";
+      $("[data-d-wa]").href = waLink(regMessage(`\n✅ ${ok ? "Pagué" : "Hice el pago"} con ePayco. Referencia: ${reg.ref || ""}`));
+      modal.querySelector(".done__list .is-pending").style.display = ok ? "none" : "";
+      if (ok) confetti();
+      return;
+    }
+    modal.querySelector(".done__list .is-pending").style.display = "";
     $("[data-d-title]").innerHTML = viaWa ? `¡Último paso, ${esc(first)}!` : `¡Soporte recibido, ${esc(first)}!`;
     $("[data-d-sub]").textContent = viaWa
       ? "Adjunta la foto del comprobante en el chat de WhatsApp que se abrió. Validamos tu pago y te confirmamos con todos los detalles."

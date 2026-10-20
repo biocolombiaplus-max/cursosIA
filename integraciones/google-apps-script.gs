@@ -5,6 +5,8 @@
  *  - Guarda cada inscripción de la landing en la hoja "Inscritos".
  *  - Guarda el comprobante de pago (Bre-B) en una carpeta de Google Drive y
  *    marca la inscripción como "Soporte recibido". Te avisa por correo.
+ *  - Marca como "Pagado (ePayco)" los pagos con tarjeta/PSE aprobados (lo verifica
+ *    directamente con ePayco, así nadie puede marcar un pago falso).
  *  - Desde el panel /admin.html: lista los inscritos, actualiza pago/asistencia
  *    y envía el certificado en PDF al correo del asistente con un clic.
  *
@@ -30,7 +32,7 @@ const CARPETA_SOPORTES = 'Soportes de pago · Curso IA Salud';
 const HOJA = 'Inscritos';
 const COLUMNAS = ['fecha', 'modalidad', 'valor', 'nombre', 'documento', 'whatsapp', 'email', 'perfil', 'ciudad',
   'institucion', 'objetivo', 'consentimiento', 'estado_pago', 'soporte', 'asistio', 'certificado', 'origen',
-  'plan', 'personas', 'grupo', 'saldo', 'total'];
+  'plan', 'personas', 'grupo', 'saldo', 'total', 'ref_epayco'];
 
 function hoja_() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
@@ -137,6 +139,29 @@ function doPost(e) {
         });
       }
       return json_({ ok: true, url: file.getUrl() });
+    }
+
+    if (action === 'pago_epayco') {
+      // Se consulta la transacción directamente en ePayco: el dato que llega no se da por cierto.
+      const ref = String(d.ref || '').replace(/[^\w-]/g, '');
+      const res = UrlFetchApp.fetch('https://secure.epayco.co/validation/v1/reference/' + ref, { muteHttpExceptions: true });
+      const t = (JSON.parse(res.getContentText() || '{}') || {}).data || {};
+      if (!t.x_ref_payco) return json_({ ok: false, error: 'Transacción no encontrada' });
+      const row = fila_(sh, t.x_extra1 || d.documento);
+      if (!row) return json_({ ok: false, error: 'Inscripción no encontrada' });
+      const cod = Number(t.x_cod_response);
+      const estado = cod === 1 ? 'Pagado (ePayco)' : (cod === 3 || cod === 7) ? 'Pago en proceso (ePayco)' : 'Pago rechazado (ePayco)';
+      const anterior = sh.getRange(row, COLUMNAS.indexOf('estado_pago') + 1).getValue();
+      set_(sh, row, 'estado_pago', estado);
+      set_(sh, row, 'ref_epayco', t.x_ref_payco);
+      if (cod === 1 && anterior !== estado && CORREO_AVISO) {
+        MailApp.sendEmail({
+          to: CORREO_AVISO,
+          subject: `💳 Pago aprobado con ePayco: ${t.x_extra5 || t.x_extra1} (${t.x_amount} ${t.x_currency_code})`,
+          htmlBody: `<p>Pago aprobado por ePayco.</p><p>Referencia: <b>${t.x_ref_payco}</b><br>Documento: ${t.x_extra1}<br>Plan: ${t.x_extra3 || ''}<br>Medio: ${t.x_franchise || t.x_bank_name || ''}</p>`
+        });
+      }
+      return json_({ ok: true, estado });
     }
 
     // Acciones administrativas: requieren clave

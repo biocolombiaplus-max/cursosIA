@@ -725,9 +725,10 @@
   }
 
   const PAGOS = ["Pendiente", "Soporte recibido", "Confirmado"];
+  const pagado = (v) => v === "Confirmado" || v === "Pagado (ePayco)";
   function renderPeople() {
     $('[data-kpi="total"]').textContent = people.length;
-    $('[data-kpi="pago"]').textContent = people.filter((p) => p.pago === "Confirmado").length;
+    $('[data-kpi="pago"]').textContent = people.filter((p) => pagado(p.pago)).length;
     $('[data-kpi="asistio"]').textContent = people.filter((p) => p.asistio).length;
     $('[data-kpi="cert"]').textContent = people.filter((p) => p.certificado).length;
     const list = filtered();
@@ -735,7 +736,7 @@
     $("#people").innerHTML = list.length
       ? list.map((p) => {
           const i = people.indexOf(p);
-          const pagoCls = p.pago === "Confirmado" ? "ok" : p.pago === "Soporte recibido" ? "mid" : "";
+          const pagoCls = pagado(p.pago) ? "ok" : /Soporte|proceso/.test(p.pago) ? "mid" : "";
           return `
         <article class="person ${p.asistio ? "is-in" : ""}" data-i="${i}">
           <label class="att" title="Marcar asistencia"><input type="checkbox" data-att ${p.asistio ? "checked" : ""} /><span></span></label>

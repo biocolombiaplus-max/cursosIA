@@ -1573,3 +1573,63 @@ svg { width: 1.2em; height: 1.2em; flex: none; }
   .stack__bridge { padding: 26px 20px; text-align: center; }
   .ticket__wins li { padding: 10px; }
 }
+
+/* ===== Pago: selector de método (Bre-B / ePayco) ===== */
+.pmethods { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 0 0 18px; }
+.pmethod { position: relative; display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto; column-gap: 10px; row-gap: 8px; align-items: center;
+  padding: 14px 14px 12px; border-radius: 18px; text-align: left; cursor: pointer; font: inherit; color: var(--text);
+  background: #fff; border: 1.5px solid var(--line); box-shadow: 0 1px 0 rgba(23,17,47,.03); transition: border-color .25s, box-shadow .3s, transform .3s var(--ease); }
+.pmethod:hover { transform: translateY(-2px); border-color: rgba(124,58,237,.35); }
+.pmethod.is-on { border-color: var(--violet); box-shadow: 0 0 0 4px rgba(124,58,237,.12), 0 14px 30px -18px rgba(76,31,209,.55); }
+.pmethod__ic { grid-row: 1; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; }
+.pmethod__ic svg { width: 20px; height: 20px; }
+.pmethod__ic--breb { background: linear-gradient(140deg, #ff7a1a, #ffb020); color: #fff; }
+.pmethod__ic--card { background: linear-gradient(140deg, #4c1fd1, #8b5cf6); color: #fff; }
+.pmethod__txt { display: flex; flex-direction: column; line-height: 1.25; min-width: 0; padding-right: 18px; }
+.pmethod__txt b { font-size: .95rem; }
+.pmethod__txt small { font-size: .74rem; color: var(--muted); }
+.pmethod__tag { grid-column: 1 / -1; justify-self: start; font-size: .68rem; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 7px; background: #e8f9ee; color: #15803d; }
+.pmethod__tag--v { background: var(--soft); color: var(--indigo); }
+.pmethod__radio { position: absolute; top: 12px; right: 12px; width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(23,17,47,.2); transition: all .25s; }
+.pmethod.is-on .pmethod__radio { border-color: var(--violet); background: radial-gradient(circle, var(--violet) 0 45%, #fff 50%); }
+
+.epc { border-radius: 22px; padding: 18px; background: linear-gradient(180deg, #fbfaff, #f4f0ff); border: 1px solid rgba(124,58,237,.16); }
+.epc__top { display: flex; align-items: center; justify-content: space-between; gap: 10px; font-size: .78rem; }
+.epc__lock { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; color: #15803d; }
+.epc__lock svg { width: 15px; height: 15px; }
+.epc__by { color: var(--muted); } .epc__by b { color: var(--text); }
+.epc__amount { margin: 14px 0 14px; padding: 16px; border-radius: 16px; background: #0e0d18; color: #fff; text-align: center; display: flex; flex-direction: column; gap: 2px; position: relative; overflow: hidden; }
+.epc__amount::before { content: ""; position: absolute; width: 240px; height: 240px; border-radius: 50%; top: -150px; right: -80px; background: radial-gradient(circle, rgba(139,92,246,.55), transparent 65%); }
+.epc__amount > * { position: relative; }
+.epc__amount small { font-size: .74rem; color: rgba(236,232,255,.65); }
+.epc__amount b { font-size: 2rem; font-weight: 800; letter-spacing: -.02em; }
+.epc__note { font-size: .76rem; color: #ffcf7a; }
+.epc__note:empty { display: none; }
+.epc__brands { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-bottom: 14px; }
+.brand-b { display: inline-grid; place-items: center; height: 28px; min-width: 46px; padding: 0 9px; border-radius: 7px; background: #fff; border: 1px solid var(--line);
+  font-size: .72rem; font-weight: 900; letter-spacing: .02em; color: #1a1a2e; }
+.brand-b--visa { color: #1a1f71; font-style: italic; font-size: .82rem; letter-spacing: .04em; }
+.brand-b--mc { display: inline-flex; gap: 0; }
+.brand-b--mc i { width: 16px; height: 16px; border-radius: 50%; background: #eb001b; }
+.brand-b--mc i + i { background: #f79e1b; margin-left: -7px; mix-blend-mode: multiply; }
+.brand-b--amex { background: #1f72cd; color: #fff; border-color: #1f72cd; }
+.brand-b--pse { color: #0b4ea2; }
+.brand-b--nequi { background: #200020; color: #ff4fc2; border-color: #200020; font-weight: 800; }
+.brand-b--dp { color: #e30613; font-weight: 800; }
+.brand-b--more { font-weight: 700; color: var(--muted); }
+.epc__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 7px; }
+.epc__list li { display: flex; align-items: center; gap: 9px; font-size: .86rem; color: #3a3456; }
+.epc__list svg { flex: none; width: 18px; height: 18px; padding: 3px; border-radius: 50%; background: #e8f9ee; color: #16a34a; }
+.btn--pay { margin-top: 14px; }
+.btn--pay > svg { width: 18px; height: 18px; }
+.epc__foot { margin: 10px 0 0; text-align: center; font-size: .78rem; color: var(--muted); }
+@media (max-width: 640px) {
+  .pmethods { gap: 8px; }
+  .pmethod { padding: 12px 10px 10px; grid-template-columns: 1fr; row-gap: 6px; }
+  .pmethod__txt { padding-right: 0; }
+  .pmethod__txt b { font-size: .88rem; }
+  .pmethod__txt small { font-size: .7rem; }
+  .pmethod__ic { width: 34px; height: 34px; }
+  .epc { padding: 14px; }
+  .epc__amount b { font-size: 1.75rem; }
+}

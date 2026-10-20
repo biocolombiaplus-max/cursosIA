@@ -70,3 +70,27 @@ Sigue las instrucciones al inicio de `integraciones/google-apps-script.gs` (10 m
 npx wrangler pages dev public   # igual que Cloudflare
 # o: python3 -m http.server 8080 --directory public
 ```
+
+## Pagos con tarjeta, PSE, Nequi y Daviplata (ePayco)
+
+La ventana de pago ofrece dos opciones: **Llave Bre-B** (sin comisión) y **Tarjeta, PSE y más** (ePayco · Smart Checkout).
+El servidor de pagos está en `worker/index.js` y corre en el mismo Worker de Cloudflare que la landing.
+Las llaves **nunca** van en el código ni en GitHub.
+
+1. En ePayco → Integraciones → Llaves API, ten a mano `P_CUST_ID_CLIENTE`, `P_KEY`, `PUBLIC_KEY` y `PRIVATE_KEY`.
+2. En Cloudflare → Workers & Pages → `cursosia` → Settings → **Variables and Secrets** → Add:
+
+| Nombre | Valor | Tipo |
+|---|---|---|
+| `EPAYCO_PUBLIC_KEY` | PUBLIC_KEY | Text |
+| `EPAYCO_PRIVATE_KEY` | PRIVATE_KEY | **Secret** |
+| `EPAYCO_CUST_ID` | P_CUST_ID_CLIENTE | Text |
+| `EPAYCO_P_KEY` | P_KEY | **Secret** |
+| `EPAYCO_TEST` | `true` para probar, `false` para cobrar de verdad | Text |
+
+3. Guarda y despliega. La opción "Tarjeta, PSE y más" aparece sola cuando las llaves están puestas.
+
+- El valor a cobrar lo calcula el servidor con los precios publicados (no se puede alterar desde el navegador).
+- Al terminar, ePayco devuelve al cliente a la landing y se le muestra "Pago aprobado" o "En proceso".
+- ePayco avisa a `/api/pago/confirmacion` (firma SHA-256 validada). Si conectaste Google Sheets, la fila queda en
+  **Pagado (ePayco)** y recibes un correo; el Apps Script vuelve a consultar la transacción en ePayco antes de marcarla.

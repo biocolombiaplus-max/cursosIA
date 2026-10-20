@@ -14,7 +14,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400;1,9..144,600&family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="assets/css/styles.css?v=20261015a" />
+  <link rel="stylesheet" href="assets/css/styles.css?v=20261020a" />
 </head>
 <body>
 
@@ -50,6 +50,7 @@
   <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15V4M7.5 8.5L12 4l4.5 4.5M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l11-6.5z" fill="currentColor"/></symbol>
   <symbol id="i-bank" viewBox="0 0 24 24"><path d="M3 9.5L12 4l9 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3 20.5h18" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-card" viewBox="0 0 24 24"><rect x="2.5" y="5" width="19" height="14" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M2.5 9.5h19M6 15h4" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
   <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 10.5V8a4 4 0 0 1 8 0v2.5" fill="none" stroke="currentColor" stroke-width="1.7"/><circle cx="12" cy="15.5" r="1.5" fill="currentColor"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1 5.9L12 17l-5.2 2.7 1-5.9-4.3-4.1 5.9-.8z" fill="currentColor"/></symbol>
   <symbol id="i-gcal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3.5 10h17M8 3v4M16 3v4M12 13v5M9.5 15.5h5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></symbol>
@@ -993,6 +994,22 @@
           <div class="pay__timer" data-p-timer><b>23</b>:<b>59</b>:<b>59</b></div>
         </div>
 
+        <div class="pmethods" data-pmethods hidden role="tablist" aria-label="Método de pago">
+          <button type="button" class="pmethod is-on" data-method="breb" role="tab" aria-selected="true">
+            <span class="pmethod__ic pmethod__ic--breb"><svg><use href="#i-bolt"/></svg></span>
+            <span class="pmethod__txt"><b>Llave Bre-B</b><small>Transferencia inmediata</small></span>
+            <span class="pmethod__tag">Sin comisión</span>
+            <i class="pmethod__radio"></i>
+          </button>
+          <button type="button" class="pmethod" data-method="epayco" role="tab" aria-selected="false">
+            <span class="pmethod__ic pmethod__ic--card"><svg><use href="#i-card"/></svg></span>
+            <span class="pmethod__txt"><b>Tarjeta, PSE y más</b><small>Crédito, débito, Nequi, Daviplata</small></span>
+            <span class="pmethod__tag pmethod__tag--v">Cuotas</span>
+            <i class="pmethod__radio"></i>
+          </button>
+        </div>
+
+        <div class="pm-panel" data-panel="breb">
         <div class="bcard" data-tilt>
           <div class="bcard__shine"></div>
           <div class="bcard__top"><span class="bcard__type">LLAVE BRE-B</span><span class="bcard__chip"></span></div>
@@ -1023,6 +1040,35 @@
         <p class="form-error" data-p-error role="alert"></p>
         <button class="btn btn--glow btn--block btn--lg" data-p-send><span class="btn__label">Enviar soporte y confirmar mi cupo</span><svg><use href="#i-arrow"/></svg></button>
         <a class="pay__alt" data-p-wa href="#" target="_blank" rel="noopener"><svg><use href="#i-wa"/></svg>Prefiero enviar el soporte por WhatsApp</a>
+        </div>
+
+        <div class="pm-panel" data-panel="epayco" hidden>
+          <div class="epc">
+            <div class="epc__top">
+              <span class="epc__lock"><svg><use href="#i-lock"/></svg>Pago 100% seguro</span>
+              <span class="epc__by">Procesado por <b>ePayco</b></span>
+            </div>
+            <div class="epc__amount"><small>Total a pagar · <span data-e-mode></span></small><b data-e-amount>$220.000</b><span class="epc__note" data-e-note></span></div>
+            <div class="epc__brands" aria-label="Medios aceptados">
+              <span class="brand-b brand-b--visa">VISA</span>
+              <span class="brand-b brand-b--mc"><i></i><i></i></span>
+              <span class="brand-b brand-b--amex">AMEX</span>
+              <span class="brand-b brand-b--pse">PSE</span>
+              <span class="brand-b brand-b--nequi">Nequi</span>
+              <span class="brand-b brand-b--dp">Daviplata</span>
+              <span class="brand-b brand-b--more">+ efectivo</span>
+            </div>
+            <ul class="epc__list">
+              <li><svg><use href="#i-check"/></svg><span>Tarjetas de crédito <b>a cuotas</b> y débito</span></li>
+              <li><svg><use href="#i-check"/></svg><span>PSE desde cualquier banco colombiano</span></li>
+              <li><svg><use href="#i-check"/></svg><span>Confirmación automática: <b>sin enviar comprobante</b></span></li>
+            </ul>
+          </div>
+          <p class="form-error" data-e-error role="alert"></p>
+          <button class="btn btn--glow btn--block btn--lg btn--pay" data-e-pay><svg><use href="#i-lock"/></svg><span class="btn__label">Pagar <span data-e-amount2>$220.000</span> de forma segura</span></button>
+          <p class="epc__foot" data-e-foot>Se abre la ventana segura de ePayco. Al terminar vuelves aquí y tu cupo queda confirmado.</p>
+        </div>
+
         <button class="pay__reset" data-p-reset type="button">+ Inscribir a otra persona</button>
       </div>
 
@@ -1051,9 +1097,9 @@
 <div class="copy-toast" data-copy-toast>Copiado ✓</div>
 
 <script src="assets/js/site-config.js"></script>
-<script src="assets/js/store.js?v=20261015a"></script>
-<script src="assets/js/main.js?v=20261015a"></script>
-<script src="assets/js/live.js?v=20261015a"></script>
-<script src="assets/js/whatsapp.js?v=20261015a"></script>
+<script src="assets/js/store.js?v=20261020a"></script>
+<script src="assets/js/main.js?v=20261020a"></script>
+<script src="assets/js/live.js?v=20261020a"></script>
+<script src="assets/js/whatsapp.js?v=20261020a"></script>
 </body>
 </html>
