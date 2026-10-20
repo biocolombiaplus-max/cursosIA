@@ -775,17 +775,22 @@
   // si el navegador no lo carga, la librería clásica checkout.js con la misma sesión.
   async function abrirCheckout(s) {
     const opciones = { sessionId: s.sessionId, type: "onpage", test: !!s.test, external: false };
-    let ultimo = "E2";
-    for (const src of ["https://checkout.epayco.co/checkout-v2.js", "https://checkout.epayco.co/checkout.js"]) {
-      try { await loadScript(src); } catch (e) { ultimo = "E2-" + e.message; console.warn("ePayco", src, e.message); continue; }
+    const fallos = [];
+    const fuentes = [
+      ["v2", "https://checkout.epayco.co/checkout-v2.js"], ["v2p", "/api/pago/checkout.js?v=2"],
+      ["v1", "https://checkout.epayco.co/checkout.js"], ["v1p", "/api/pago/checkout.js?v=1"]
+    ];
+    for (const [id, src] of fuentes) {
+      if (window.ePayco && window.ePayco.checkout) { /* ya cargada por una fuente anterior */ }
+      else { try { await loadScript(src); } catch (e) { fallos.push(`${id}:${e.message}`); console.warn("ePayco", src, e.message); continue; } }
       try {
         const h = window.ePayco.checkout.configure(opciones);
         if (h && typeof h.open === "function") { h.open(); return; }
         if (h && typeof h.openNew === "function") { h.openNew(); return; }
-        ultimo = "E3-metodo";
-      } catch (e) { ultimo = "E3"; console.warn("ePayco configure", e); }
+        fallos.push(`${id}:sin-open`);
+      } catch (e) { fallos.push(`${id}:E3 ${String(e.message || e).slice(0, 60)}`); console.warn("ePayco configure", e); }
     }
-    throw Object.assign(new Error(""), { codigo: ultimo });
+    throw Object.assign(new Error(""), { codigo: "E2 " + fallos.join(" | ") });
   }
   $("[data-e-pay]").addEventListener("click", async (e) => {
     const btn = e.currentTarget, err = $("[data-e-error]"), lbl = $(".btn__label", btn), txt = lbl.innerHTML;

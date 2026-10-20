@@ -17,6 +17,7 @@
  *   EPAYCO_TEST         "true" para pruebas, "false" o vacío para pagos reales
  */
 const APIFY = "https://apify.epayco.co";
+const SCRIPTS = ["https://checkout.epayco.co/checkout-v2.js", "https://checkout.epayco.co/checkout.js"];
 const VALIDACION = "https://secure.epayco.co/validation/v1/reference/";
 
 export default {
@@ -40,11 +41,24 @@ async function api(req, env, ctx, url) {
 
   if (ruta === "config") return json({ ok: true, activo, test });
 
+  // Copia de la librería de ePayco servida desde este dominio (respaldo si el navegador no carga checkout.epayco.co)
+  if (ruta === "checkout.js") {
+    const src = url.searchParams.get("v") === "1" ? SCRIPTS[1] : SCRIPTS[0];
+    const r = await fetch(src, { cf: { cacheTtl: 3600, cacheEverything: true } });
+    if (!r.ok) return new Response(`/* ePayco ${r.status} */`, { status: 502, headers: { "Content-Type": "text/javascript" } });
+    return new Response(r.body, { headers: { "Content-Type": "text/javascript; charset=utf-8", "Cache-Control": "public, max-age=3600" } });
+  }
+
   // Diagnóstico sin mostrar llaves: /api/pago/diagnostico
   if (ruta === "diagnostico") {
     const v = (k) => (env[k] ? `ok (${String(env[k]).trim().length} caracteres)` : "FALTA");
     const out = { EPAYCO_PUBLIC_KEY: v("EPAYCO_PUBLIC_KEY"), EPAYCO_PRIVATE_KEY: v("EPAYCO_PRIVATE_KEY"), EPAYCO_CUST_ID: v("EPAYCO_CUST_ID"),
       EPAYCO_P_KEY: v("EPAYCO_P_KEY"), EPAYCO_TEST: env.EPAYCO_TEST ?? "(vacío = pagos reales)", modoPruebas: test };
+    for (const [i, src] of SCRIPTS.entries()) {
+      const r = await fetch(src).catch(() => null);
+      const txt = r && r.ok ? await r.text() : "";
+      out[`libreria${i ? "Clasica" : "V2"}`] = r ? `HTTP ${r.status}${txt ? ` · ${txt.length} bytes${/configure/.test(txt) ? " · ok" : ""}` : ""}` : "sin conexión";
+    }
     if (activo) {
       let fallo = "";
       const t = await login(env).catch((e) => ((fallo = e.message), ""));
