@@ -762,19 +762,39 @@
     if (d && d.activo) { methods.hidden = false; epaycoTest = d.test; }
   }).catch(() => {});
 
-  const loadScript = (src) => new Promise((res, rej) => {
-    if (window.ePayco) return res();
+  const cargados = {};
+  const loadScript = (src) => cargados[src] || (cargados[src] = new Promise((res, rej) => {
     const sc = document.createElement("script");
-    sc.src = src; sc.onload = res; sc.onerror = rej;
+    sc.src = src; sc.async = true;
+    sc.onload = () => (window.ePayco && window.ePayco.checkout ? res() : rej(new Error("sin-epayco")));
+    sc.onerror = () => { delete cargados[src]; rej(new Error("script")); };
+    setTimeout(() => rej(new Error("timeout")), 15000);
     document.head.appendChild(sc);
-  });
+  }));
+  // Abre el Smart Checkout de ePayco. Usa checkout-v2.js (documentación oficial) y,
+  // si el navegador no lo carga, la librería clásica checkout.js con la misma sesión.
+  async function abrirCheckout(s) {
+    const opciones = { sessionId: s.sessionId, type: "onpage", test: !!s.test, external: false };
+    let ultimo = "E2";
+    for (const src of ["https://checkout.epayco.co/checkout-v2.js", "https://checkout.epayco.co/checkout.js"]) {
+      try { await loadScript(src); } catch (e) { ultimo = "E2-" + e.message; console.warn("ePayco", src, e.message); continue; }
+      try {
+        const h = window.ePayco.checkout.configure(opciones);
+        if (h && typeof h.open === "function") { h.open(); return; }
+        if (h && typeof h.openNew === "function") { h.openNew(); return; }
+        ultimo = "E3-metodo";
+      } catch (e) { ultimo = "E3"; console.warn("ePayco configure", e); }
+    }
+    throw Object.assign(new Error(""), { codigo: ultimo });
+  }
   $("[data-e-pay]").addEventListener("click", async (e) => {
     const btn = e.currentTarget, err = $("[data-e-error]"), lbl = $(".btn__label", btn), txt = lbl.innerHTML;
-    if (!reg) return;
+    if (!reg || btn.classList.contains("is-loading")) return;
     err.textContent = "";
     reg.payError = "";
     btn.classList.add("is-loading");
     lbl.textContent = "Preparando pago seguro…";
+    let codigo = "E1";
     try {
       const d = reg.data;
       const r = await fetch("/api/pago/sesion", {
@@ -782,14 +802,15 @@
         body: JSON.stringify({ regId: reg.id, nombre: d.nombre, email: d.email, documento: d.documento, whatsapp: d.whatsapp, ciudad: d.ciudad,
           modalidad: d.modalidad, plan: /^reserva/i.test(d.plan || "") ? "reserva" : "completo", grupo: !!d.grupo && d.grupo !== "No", personas: d.personas })
       });
-      const s = await r.json().catch(() => ({}));
-      if (!s.ok) throw new Error(s.error || "No se pudo iniciar el pago.");
-      await loadScript("https://checkout.epayco.co/checkout-v2.js");
+      const s = await r.json().catch(() => ({ codigo: "E1-" + r.status }));
+      if (!s.ok || !s.sessionId) { codigo = s.codigo || "E1-" + r.status; throw new Error(s.error || ""); }
       reg.via = "epayco"; saveReg();
-      const checkout = window.ePayco.checkout.configure({ sessionId: s.sessionId, type: "onpage", test: !!s.test });
-      checkout.open();
+      await abrirCheckout(s);
     } catch (x) {
-      err.textContent = (x && x.message && x.message !== "Failed to fetch" ? x.message : "No pudimos abrir el pago.") + " Puedes pagar con llave Bre-B o escribirnos por WhatsApp.";
+      codigo = x.codigo || codigo;
+      err.textContent = (x.message && !/fetch/i.test(x.message) ? x.message : "No pudimos abrir el pago con tarjeta.") +
+        ` Puedes pagar con llave Bre-B o escribirnos por WhatsApp. (código ${codigo})`;
+      console.warn("Pago ePayco", codigo, x);
     }
     btn.classList.remove("is-loading");
     lbl.innerHTML = txt;

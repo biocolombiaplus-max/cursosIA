@@ -36,9 +36,29 @@ export default {
 async function api(req, env, ctx, url) {
   const ruta = url.pathname.replace("/api/pago/", "");
   const activo = Boolean(env.EPAYCO_PUBLIC_KEY && env.EPAYCO_PRIVATE_KEY);
-  const test = String(env.EPAYCO_TEST || "").toLowerCase() === "true";
+  const test = String(env.EPAYCO_TEST || "").trim().toLowerCase() === "true";
 
   if (ruta === "config") return json({ ok: true, activo, test });
+
+  // Diagnóstico sin mostrar llaves: /api/pago/diagnostico
+  if (ruta === "diagnostico") {
+    const v = (k) => (env[k] ? `ok (${String(env[k]).trim().length} caracteres)` : "FALTA");
+    const out = { EPAYCO_PUBLIC_KEY: v("EPAYCO_PUBLIC_KEY"), EPAYCO_PRIVATE_KEY: v("EPAYCO_PRIVATE_KEY"), EPAYCO_CUST_ID: v("EPAYCO_CUST_ID"),
+      EPAYCO_P_KEY: v("EPAYCO_P_KEY"), EPAYCO_TEST: env.EPAYCO_TEST ?? "(vacío = pagos reales)", modoPruebas: test };
+    if (activo) {
+      let fallo = "";
+      const t = await login(env).catch((e) => ((fallo = e.message), ""));
+      out.conexionEpayco = t ? "ok · llaves aceptadas por ePayco" : `ERROR · ${fallo}`;
+      if (t) {
+        const r = await crearSesion(t, { test, ip: req.headers.get("CF-Connecting-IP") || "127.0.0.1", name: "Prueba de diagnóstico", description: "Diagnóstico",
+          currency: "COP", amount: 10000, taxBase: 0, tax: 0, taxIco: 0, country: "CO", lang: "ES", checkout_version: "2",
+          response: `${url.origin}/?pago=epayco`, confirmation: `${url.origin}/api/pago/confirmacion`,
+          billing: { email: "diagnostico@biomarketing.co", name: "Diagnostico", address: "Colombia", typeDoc: "CC", numberDoc: "1000000000" } });
+        out.crearSesion = r.sessionId ? "ok · sesión de pago creada" : `ERROR · ${r.detalle}`;
+      }
+    }
+    return json(out);
+  }
 
   if (ruta === "sesion" && req.method === "POST") {
     if (!activo) return json({ ok: false, error: "Los pagos con tarjeta aún no están activos. Usa la llave Bre-B." }, 503);
@@ -52,7 +72,7 @@ async function api(req, env, ctx, url) {
     if (!doc || !nombre || !/^\S+@\S+\.\S+$/.test(email)) return json({ ok: false, error: "Faltan datos del comprador." }, 400);
 
     const token = await login(env).catch(() => "");
-    if (!token) return json({ ok: false, error: "No pudimos conectar con ePayco en este momento." }, 502);
+    if (!token) return json({ ok: false, codigo: "E1-login", error: "No pudimos conectar con ePayco en este momento." }, 502);
     const titulo = cfg.evento?.titulo || "Taller IA para el Sector Salud con Claude";
     const planTxt = c.modalidad === "Virtual" ? "Virtual" : c.plan === "reserva" ? "Presencial · reserva" : "Presencial · pago completo";
     const regId = limpio(b.regId, 40);
@@ -80,18 +100,11 @@ async function api(req, env, ctx, url) {
       extra5: nombre,
       billing: { email, name: nombre, address: limpio(b.ciudad, 60) || "Colombia", typeDoc: "CC", numberDoc: doc, ...(tel ? { mobilePhone: tel } : {}) }
     };
-    const r = await fetch(`${APIFY}/payment/session/create`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-      body: JSON.stringify(body)
-    });
-    const d = await r.json().catch(() => ({}));
-    const sessionId = d?.data?.sessionId;
+    const { sessionId, detalle } = await crearSesion(token, body);
     if (!sessionId) {
-      const det = (d?.data?.errors || d?.errors || []).map?.((e) => e.errorMessage).filter(Boolean).join(" · ");
       // El detalle técnico queda en los registros de Cloudflare (Observability), no se le muestra al cliente
-      console.log("ePayco session/create", r.status, det || JSON.stringify(d).slice(0, 800));
-      return json({ ok: false, error: "No pudimos abrir el pago con tarjeta en este momento." }, 502);
+      console.log("ePayco session/create", detalle);
+      return json({ ok: false, codigo: "E1-sesion", error: "No pudimos abrir el pago con tarjeta en este momento." }, 502);
     }
     return json({ ok: true, sessionId, test, amount: c.hoy });
   }
@@ -119,20 +132,38 @@ async function api(req, env, ctx, url) {
 }
 
 /* ---------- ePayco ---------- */
-async function login(env) {
-  const r = await fetch(`${APIFY}/login`, {
+async function crearSesion(token, body) {
+  const r = await fetch(`${APIFY}/payment/session/create`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: "Basic " + btoa(`${env.EPAYCO_PUBLIC_KEY}:${env.EPAYCO_PRIVATE_KEY}`) }
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(body)
   });
   const d = await r.json().catch(() => ({}));
-  if (!d.token) throw new Error("login");
+  const sessionId = d?.data?.sessionId || d?.sessionId || "";
+  const errs = d?.data?.errors || d?.errors || [];
+  const det = Array.isArray(errs) ? errs.map((e) => e.errorMessage || e.message).filter(Boolean).join(" · ") : "";
+  return { sessionId, detalle: `HTTP ${r.status} ${det || d?.textResponse || d?.titleResponse || JSON.stringify(d).slice(0, 400)}` };
+}
+
+async function login(env) {
+  let r;
+  try {
+    r = await fetch(`${APIFY}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: "Basic " + btoa(`${String(env.EPAYCO_PUBLIC_KEY).trim()}:${String(env.EPAYCO_PRIVATE_KEY).trim()}`) }
+    });
+  } catch (e) {
+    throw new Error("sin conexión con apify.epayco.co");
+  }
+  const d = await r.json().catch(() => ({}));
+  if (!d.token) throw new Error(`ePayco rechazó PUBLIC_KEY/PRIVATE_KEY (HTTP ${r.status})`);
   return d.token;
 }
 
 // Devuelve true/false si hay P_KEY configurada; null si no se puede validar.
 async function firmaValida(env, f) {
   if (!env.EPAYCO_CUST_ID || !env.EPAYCO_P_KEY || !f.x_signature) return null;
-  const base = [env.EPAYCO_CUST_ID, env.EPAYCO_P_KEY, f.x_ref_payco, f.x_transaction_id, f.x_amount, f.x_currency_code].join("^");
+  const base = [String(env.EPAYCO_CUST_ID).trim(), String(env.EPAYCO_P_KEY).trim(), f.x_ref_payco, f.x_transaction_id, f.x_amount, f.x_currency_code].join("^");
   const hash = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(base));
   const hex = [...new Uint8Array(hash)].map((x) => x.toString(16).padStart(2, "0")).join("");
   return hex === String(f.x_signature).toLowerCase();
