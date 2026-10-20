@@ -4,6 +4,9 @@
   "name": "cursosia",
   "main": "worker/index.js",
   "compatibility_date": "2025-09-01",
+  // Conserva las variables creadas en el panel de Cloudflare (llaves de ePayco) en cada despliegue.
+  // Nunca escribas las llaves aquí: este archivo está en GitHub.
+  "keep_vars": true,
   "assets": {
     "directory": "./public",
     "binding": "ASSETS",
